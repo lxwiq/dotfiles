@@ -182,6 +182,67 @@ if ! command -v fzf &> /dev/null; then
         "sudo pacman -S --noconfirm fzf && echo 'y' | /usr/share/fzf/install"
 fi
 
+# Installation d'outils supplémentaires
+echo -e "\n${BLUE}Installing additional tools...${NC}"
+
+# Installation de bat (cat avec syntax highlighting)
+if ! command -v bat &> /dev/null; then
+    install_package "bat" \
+        "brew install bat" \
+        "sudo apt-get update && sudo apt-get install -y bat || sudo apt-get install -y batcat" \
+        "sudo dnf install -y bat" \
+        "sudo pacman -S --noconfirm bat"
+fi
+
+# Installation de ripgrep (grep amélioré)
+if ! command -v rg &> /dev/null; then
+    install_package "ripgrep" \
+        "brew install ripgrep" \
+        "sudo apt-get update && sudo apt-get install -y ripgrep" \
+        "sudo dnf install -y ripgrep" \
+        "sudo pacman -S --noconfirm ripgrep"
+fi
+
+# Installation de fd (find amélioré)
+if ! command -v fd &> /dev/null; then
+    install_package "fd" \
+        "brew install fd" \
+        "sudo apt-get update && sudo apt-get install -y fd-find" \
+        "sudo dnf install -y fd-find" \
+        "sudo pacman -S --noconfirm fd"
+fi
+
+# Installation de htop (top amélioré)
+if ! command -v htop &> /dev/null; then
+    install_package "htop" \
+        "brew install htop" \
+        "sudo apt-get update && sudo apt-get install -y htop" \
+        "sudo dnf install -y htop" \
+        "sudo pacman -S --noconfirm htop"
+fi
+
+# Neofetch a été retiré car non nécessaire
+
+# Figlet a été retiré pour une configuration minimaliste
+
+# Installation de tree (affichage arborescent)
+if ! command -v tree &> /dev/null; then
+    install_package "tree" \
+        "brew install tree" \
+        "sudo apt-get update && sudo apt-get install -y tree" \
+        "sudo dnf install -y tree" \
+        "sudo pacman -S --noconfirm tree"
+fi
+
+# Installation de jq (manipulation JSON)
+if ! command -v jq &> /dev/null; then
+    install_package "jq" \
+        "brew install jq" \
+        "sudo apt-get update && sudo apt-get install -y jq" \
+        "sudo dnf install -y jq" \
+        "sudo pacman -S --noconfirm jq"
+fi
+
 # Installation de tmux si nécessaire
 if ! command -v tmux &> /dev/null; then
     install_package "tmux" \

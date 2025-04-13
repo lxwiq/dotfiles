@@ -6,11 +6,28 @@ ZSH_THEME=""
 
 # Enable plugins
 plugins=(
-  git
-  z
-  zsh-autosuggestions
-  zsh-syntax-highlighting
-  fzf
+  git                     # Git integration and aliases
+  z                       # Jump to directories based on frequency
+  zsh-autosuggestions     # Fish-like autosuggestions
+  zsh-syntax-highlighting # Syntax highlighting for commands
+  fzf                     # Fuzzy finder integration
+  colored-man-pages       # Colorized man pages
+  command-not-found       # Suggests package to install if command not found
+  copypath                # Copy current directory path to clipboard
+  copyfile                # Copy file contents to clipboard
+  dirhistory              # Keyboard shortcuts for directory history navigation
+  extract                 # Extract any archive with 'x' command
+  history                 # History aliases and functions
+  sudo                    # Press ESC twice to add sudo to current command
+  web-search              # Search from terminal (e.g., google, duckduckgo)
+  jsontools               # Tools for working with JSON (e.g., pp_json, is_json)
+  docker                  # Docker aliases and functions
+  docker-compose          # Docker Compose aliases
+  npm                     # NPM aliases and completion
+  nvm                     # NVM (Node Version Manager) integration
+  python                  # Python aliases and functions
+  pip                     # Pip completion and aliases
+  tmux                    # Tmux aliases and functions
 )
 
 # Source Oh My Zsh
@@ -59,13 +76,13 @@ bindkey '^I' menu-complete  # Tab pour la complétion de menu, comme dans PowerS
 # Configuration de fzf (équivalent à PSFzf)
 if command -v fzf &> /dev/null; then
     export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border"
-    
+
     # Charger l'intégration fzf
     [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-    
+
     # Configurer Ctrl+R pour rechercher dans l'historique avec fzf (comme dans PowerShell)
     bindkey '^r' fzf-history-widget
-    
+
     # Configurer Ctrl+F pour rechercher des fichiers avec fzf (comme dans PowerShell)
     bindkey '^f' fzf-file-widget
 fi
@@ -87,14 +104,91 @@ else
 fi
 
 # Définir des alias (équivalents à ceux de PowerShell)
+
+# Éditeur
 alias vim='nvim'
-alias g='git'
-alias grep='grep --color=auto'
-alias touch='touch'
-alias open='open'
-alias du='du -h'
-alias top='top'
+alias vi='nvim'
+alias v='nvim'
+
+# Navigation
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias .....='cd ../../../..'
+alias ~='cd ~'
+alias -- -='cd -'
+alias cd.='cd ..'
 alias oe='open .'
+alias o='open'
+
+# Lister les fichiers
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+alias du='du -h'
+alias df='df -h'
+alias free='free -m'
+
+# Utilitaires système
+alias top='htop 2>/dev/null || top'
+alias h='history'
+alias j='jobs -l'
+alias path='echo -e ${PATH//:/\\n}'
+alias now='date +"%T"'
+alias nowtime=now
+alias nowdate='date +"%d-%m-%Y"'
+alias ports='netstat -tulanp'
+alias meminfo='free -m -l -t'
+alias psmem='ps auxf | sort -nr -k 4'
+alias pscpu='ps auxf | sort -nr -k 3'
+
+# Git
+alias g='git'
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit -m'
+alias gp='git push'
+alias gl='git pull'
+alias gd='git diff'
+alias gco='git checkout'
+alias gb='git branch'
+alias glog='git log --oneline --decorate --graph'
+
+# Docker
+alias d='docker'
+alias dc='docker-compose'
+alias dps='docker ps'
+alias dimg='docker images'
+
+# Tmux
+alias t='tmux'
+alias ta='tmux attach -t'
+alias tls='tmux list-sessions'
+alias tn='tmux new -s'
+
+# Raccourcis divers
+alias c='clear'
+alias cls='clear'
+alias e='exit'
+alias r='reload'
+alias sz='source ~/.zshrc'
+alias ez='$EDITOR ~/.zshrc'
+alias et='$EDITOR ~/.config/tmux/tmux.conf'
+alias ip='get_pub_ip'
+alias localip='ipconfig getifaddr en0'
+alias myip='curl -s http://ipecho.net/plain; echo'
+alias weather='curl -s wttr.in'
+alias cpwd='pwd | tr -d "\n" | pbcopy'
+alias ping='ping -c 5'
+alias www='python -m SimpleHTTPServer 8000'
+alias speedtest='curl -s https://raw.githubusercontent.com/sivel/speedtest-cli/master/speedtest.py | python -'
+
+# Sécurité
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+alias ln='ln -i'
 
 # Fonction pour créer un répertoire et y accéder (équivalent à mkcd)
 mkcd() {
@@ -140,6 +234,124 @@ sh() {
     history | grep "$1"
 }
 
+# Fonction pour extraire n'importe quel type d'archive
+extract() {
+    if [ -f $1 ] ; then
+        case $1 in
+            *.tar.bz2)   tar xjf $1     ;;
+            *.tar.gz)    tar xzf $1     ;;
+            *.bz2)       bunzip2 $1     ;;
+            *.rar)       unrar e $1     ;;
+            *.gz)        gunzip $1      ;;
+            *.tar)       tar xf $1      ;;
+            *.tbz2)      tar xjf $1     ;;
+            *.tgz)       tar xzf $1     ;;
+            *.zip)       unzip $1       ;;
+            *.Z)         uncompress $1  ;;
+            *.7z)        7z x $1        ;;
+            *)           echo "'$1' cannot be extracted via extract()" ;;
+        esac
+    else
+        echo "'$1' is not a valid file"
+    fi
+}
+
+# Fonction pour créer une archive
+compress() {
+    if [ -n "$1" ] ; then
+        FILE=$1
+        case $FILE in
+            *.tar.bz2)  shift && tar cjf $FILE $* ;;
+            *.tar.gz)   shift && tar czf $FILE $* ;;
+            *.tar)      shift && tar cf $FILE $*  ;;
+            *.zip)      shift && zip -r $FILE $*  ;;
+            *.7z)       shift && 7z a $FILE $*   ;;
+            *)          echo "'$FILE' cannot be compressed via compress()" ;;
+        esac
+    else
+        echo "usage: compress <file.tar.gz> [files]"
+    fi
+}
+
+# Fonction pour créer rapidement un serveur HTTP
+server() {
+    local port="${1:-8000}"
+    open "http://localhost:${port}/"
+    python -m SimpleHTTPServer "$port"
+}
+
+# Fonction pour afficher les couleurs du terminal
+colors() {
+    for i in {0..255}; do
+        printf "\x1b[38;5;${i}mcolor%-5i\x1b[0m" $i
+        if ! (( ($i + 1 ) % 8 )); then
+            echo
+        fi
+    done
+}
+
+# Fonction pour calculer
+calc() {
+    echo "scale=2; $*" | bc
+}
+
+# Fonction pour créer un répertoire et y aller
+take() {
+    mkdir -p $1
+    cd $1
+}
+
+# Fonction pour trouver des fichiers contenant un texte
+find_text() {
+    grep -r "$1" .
+}
+
+# Fonction pour afficher l'arborescence des répertoires
+tree_dir() {
+    find . -type d -print | sed -e 's;[^/]*/;|____;g;s;____|; |;g'
+}
+
+# Fonction pour afficher les processus utilisant un port
+port_usage() {
+    lsof -i :"$1"
+}
+
+# Fonction pour tuer un processus utilisant un port
+kill_port() {
+    kill -9 $(lsof -t -i:"$1")
+}
+
+# Fonction pour obtenir la météo
+weather_full() {
+    curl -s "wttr.in/$1"
+}
+
+# Fonction pour générer un mot de passe aléatoire
+genpass() {
+    local length="${1:-16}"
+    LC_ALL=C tr -dc 'A-Za-z0-9_!@#$%^&*()' < /dev/urandom | head -c $length | xargs
+}
+
+# Fonction pour convertir une vidéo en GIF
+video2gif() {
+    ffmpeg -i "$1" -vf "fps=10,scale=320:-1:flags=lanczos" -c:v pam -f image2pipe - | convert -delay 10 - -loop 0 -layers optimize "$2"
+}
+
+# Fonction pour obtenir l'IP d'un domaine
+getip() {
+    dig +short "$1"
+}
+
+# Fonction pour vérifier si un site est accessible
+checksite() {
+    curl -s --head "$1" | head -n 1
+}
+
+# Fonction pour nettoyer les fichiers .DS_Store
+cleanDS() {
+    find . -type f -name '*.DS_Store' -ls -delete
+}
+
 # Activer les prédictions basées sur l'historique (comme PredictionSource = 'History' dans PowerShell)
 if [[ -f ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
     # Configurer les suggestions pour qu'elles ressemblent à PSReadLine
@@ -167,5 +379,65 @@ if command -v ng &> /dev/null; then
     source <(ng completion script)
 fi
 
-# Added by Windsurf
-export PATH="/Users/lowiq/.codeium/windsurf/bin:$PATH"
+
+# ===== Configurations supplémentaires =====
+
+# Activer la correction automatique des commandes
+setopt correct
+setopt correctall
+
+# Activer le changement de répertoire sans cd
+setopt autocd
+
+# Complétion améliorée
+setopt always_to_end        # Placer le curseur à la fin de la ligne après complétion
+setopt complete_in_word     # Compléter à partir de la position du curseur
+setopt auto_menu            # Afficher le menu de complétion après la seconde tabulation
+setopt auto_list            # Lister automatiquement les possibilités de complétion
+
+# Historique amélioré
+setopt append_history       # Ajouter à l'historique plutôt que de le remplacer
+setopt inc_append_history   # Ajouter les commandes à l'historique au fur et à mesure
+setopt hist_expire_dups_first # Supprimer les doublons en premier lors du nettoyage
+setopt hist_ignore_space    # Ne pas enregistrer les commandes commençant par un espace
+
+# Globbing et expansion
+setopt extended_glob        # Utiliser le globbing étendu
+setopt glob_dots            # Inclure les fichiers cachés dans le globbing
+
+# Divers
+setopt interactive_comments # Permettre les commentaires dans les commandes interactives
+setopt no_beep              # Désactiver les bips
+setopt prompt_subst         # Permettre la substitution dans les prompts
+
+# Raccourcis clavier supplémentaires
+bindkey '^L' clear-screen            # Ctrl+L - effacer l'écran
+bindkey '^[[1;5C' forward-word       # Ctrl+Right - avancer d'un mot
+bindkey '^[[1;5D' backward-word      # Ctrl+Left - reculer d'un mot
+bindkey '^[[H' beginning-of-line     # Home - début de ligne
+bindkey '^[[F' end-of-line           # End - fin de ligne
+bindkey '^[[3~' delete-char          # Delete - supprimer caractère
+bindkey '^H' backward-kill-word      # Ctrl+Backspace - supprimer mot précédent
+
+# Activer la coloration syntaxique pour less
+export LESS="-R"
+export LESS_TERMCAP_mb=$'\E[1;31m'     # début de blink
+export LESS_TERMCAP_md=$'\E[1;36m'     # début de bold
+export LESS_TERMCAP_me=$'\E[0m'        # fin de mode
+export LESS_TERMCAP_so=$'\E[01;44;33m' # début de standout-mode
+export LESS_TERMCAP_se=$'\E[0m'        # fin de standout-mode
+export LESS_TERMCAP_us=$'\E[1;32m'     # début de underline
+export LESS_TERMCAP_ue=$'\E[0m'        # fin de underline
+
+# Activer la complétion pour les commandes sudo
+zstyle ':completion:*:sudo:*' command-path /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin
+
+# Activer la complétion pour les hôtes SSH
+zstyle ':completion:*:(ssh|scp|sftp):*' hosts $hosts
+zstyle ':completion:*:(ssh|scp|sftp):*' users $users
+
+# Activer la complétion pour les processus
+zstyle ':completion:*:*:kill:*:processes' list-colors '=(#b) #([0-9]#) ([0-9a-z-]#)*=01;34=0=01'
+zstyle ':completion:*:*:*:*:processes' command "ps -u $USER -o pid,user,comm -w -w"
+
+# Configuration minimaliste - pas de message de bienvenue
