@@ -1,0 +1,13 @@
+# Cursor configuration
+[cursor]
+style = { shape = "Beam", blinking = "On" }
+thickness = 0.2
+
+# Scrolling configuration
+[scrolling]
+history = 10000
+multiplier = 3
+
+# Mouse configuration
+[mouse]
+hide_when_typing = true

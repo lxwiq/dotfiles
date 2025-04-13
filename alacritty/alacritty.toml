@@ -1,0 +1,13 @@
+[general]
+# Beautiful Blue Alacritty Configuration
+# Main configuration file that imports all other configuration files
+
+# Import shell configuration
+import = [
+    "shell.toml",
+    "window.toml",
+    "themes/blue.toml",
+    "keybindings/default.toml",
+    "misc.toml",
+    "font.toml"
+]
