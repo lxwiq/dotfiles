@@ -200,6 +200,64 @@ if ! command -v zsh &> /dev/null; then
         "sudo pacman -S --noconfirm zsh"
 fi
 
+# Installation de ranger et ses dépendances
+if ! command -v ranger &> /dev/null; then
+    echo -e "\n${BLUE}Installing ranger file manager...${NC}"
+    install_package "ranger" \
+        "brew install ranger" \
+        "sudo apt-get update && sudo apt-get install -y ranger python3-pip" \
+        "sudo dnf install -y ranger python3-pip" \
+        "sudo pacman -S --noconfirm ranger python-pip"
+
+    # Installation des dépendances pour les plugins ranger
+    echo -e "\n${BLUE}Installing ranger plugins dependencies...${NC}"
+    pip3 install --user pillow ueberzug
+
+    # Installation de ranger_devicons (icônes pour ranger)
+    if [ ! -d "$HOME/.config/ranger/plugins/ranger_devicons" ]; then
+        echo -e "\n${BLUE}Installing ranger_devicons plugin...${NC}"
+        mkdir -p "$HOME/.config/ranger/plugins"
+        git clone https://github.com/alexanderjeurissen/ranger_devicons "$HOME/.config/ranger/plugins/ranger_devicons"
+    fi
+fi
+
+# Créer les liens symboliques pour ranger
+echo -e "\n${BLUE}Configuring ranger...${NC}"
+if [ -d "$DOTFILES_DIR/ranger" ]; then
+    for file in "$DOTFILES_DIR"/ranger/*; do
+        if [ -f "$file" ]; then
+            filename=$(basename "$file")
+            create_symlink "$file" "$HOME/.config/ranger/$filename"
+        fi
+    done
+else
+    echo -e "${YELLOW}Ranger configuration directory not found. Creating basic configuration...${NC}"
+    mkdir -p "$DOTFILES_DIR/ranger"
+    # Création d'une configuration de base pour ranger
+    if [ ! -f "$DOTFILES_DIR/ranger/rc.conf" ]; then
+        echo -e "${BLUE}Creating basic ranger configuration...${NC}"
+        mkdir -p "$HOME/.config/ranger"
+        ranger --copy-config=all
+        if [ -f "$HOME/.config/ranger/rc.conf" ]; then
+            cp "$HOME/.config/ranger/rc.conf" "$DOTFILES_DIR/ranger/"
+            cp "$HOME/.config/ranger/rifle.conf" "$DOTFILES_DIR/ranger/"
+            cp "$HOME/.config/ranger/scope.sh" "$DOTFILES_DIR/ranger/"
+            chmod +x "$DOTFILES_DIR/ranger/scope.sh"
+            # Activer les plugins dans la configuration
+            echo "default_linemode devicons" >> "$DOTFILES_DIR/ranger/rc.conf"
+            echo "set preview_images true" >> "$DOTFILES_DIR/ranger/rc.conf"
+            echo "set preview_images_method ueberzug" >> "$DOTFILES_DIR/ranger/rc.conf"
+            # Créer les liens symboliques
+            for file in "$DOTFILES_DIR"/ranger/*; do
+                if [ -f "$file" ]; then
+                    filename=$(basename "$file")
+                    create_symlink "$file" "$HOME/.config/ranger/$filename"
+                fi
+            done
+        fi
+    fi
+fi
+
 echo -e "\n${GREEN}Installation complete!${NC}"
 echo -e "${BLUE}To apply changes, restart your terminal or run:${NC}"
 echo -e "${GREEN}source ~/.zshrc${NC}"
