@@ -243,6 +243,93 @@ if ! command -v jq &> /dev/null; then
         "sudo pacman -S --noconfirm jq"
 fi
 
+# Installation des outils spécifiques pour le développement front-end, Rust et Go
+echo -e "\n${BLUE}Installing development tools for front-end, Rust and Go...${NC}"
+
+# Installation de Node.js et npm si nécessaire
+if ! command -v node &> /dev/null; then
+    install_package "Node.js" \
+        "brew install node" \
+        "curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt-get install -y nodejs" \
+        "curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo dnf install -y nodejs" \
+        "sudo pacman -S --noconfirm nodejs npm"
+fi
+
+# Installation de Yarn si nécessaire
+if ! command -v yarn &> /dev/null; then
+    install_package "Yarn" \
+        "brew install yarn" \
+        "curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && echo \"deb https://dl.yarnpkg.com/debian/ stable main\" | sudo tee /etc/apt/sources.list.d/yarn.list && sudo apt-get update && sudo apt-get install -y yarn" \
+        "curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo && sudo dnf install -y yarn" \
+        "sudo pacman -S --noconfirm yarn"
+fi
+
+# Installation d'Angular CLI si nécessaire
+if ! command -v ng &> /dev/null; then
+    echo -e "\n${BLUE}Installing Angular CLI...${NC}"
+    if command -v npm &> /dev/null; then
+        npm install -g @angular/cli
+    else
+        echo -e "${RED}npm not found. Cannot install Angular CLI.${NC}"
+    fi
+fi
+
+# Installation de Rust si nécessaire
+if ! command -v rustc &> /dev/null; then
+    echo -e "\n${BLUE}Installing Rust...${NC}"
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    source "$HOME/.cargo/env"
+fi
+
+# Installation de cargo-watch pour Rust si nécessaire
+if command -v cargo &> /dev/null && ! cargo install --list | grep -q cargo-watch; then
+    echo -e "\n${BLUE}Installing cargo-watch...${NC}"
+    cargo install cargo-watch
+fi
+
+# Installation de cargo-audit pour Rust si nécessaire
+if command -v cargo &> /dev/null && ! cargo install --list | grep -q cargo-audit; then
+    echo -e "\n${BLUE}Installing cargo-audit...${NC}"
+    cargo install cargo-audit
+fi
+
+# Installation de Go si nécessaire
+if ! command -v go &> /dev/null; then
+    install_package "Go" \
+        "brew install go" \
+        "sudo apt-get update && sudo apt-get install -y golang" \
+        "sudo dnf install -y golang" \
+        "sudo pacman -S --noconfirm go"
+fi
+
+# Installation de golangci-lint pour Go si nécessaire
+if ! command -v golangci-lint &> /dev/null; then
+    echo -e "\n${BLUE}Installing golangci-lint...${NC}"
+    if command -v go &> /dev/null; then
+        go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+    else
+        echo -e "${RED}Go not found. Cannot install golangci-lint.${NC}"
+    fi
+fi
+
+# Installation de HTTPie si nécessaire
+if ! command -v http &> /dev/null; then
+    install_package "HTTPie" \
+        "brew install httpie" \
+        "sudo apt-get update && sudo apt-get install -y httpie" \
+        "sudo dnf install -y httpie" \
+        "sudo pacman -S --noconfirm httpie"
+fi
+
+# Installation de GitHub CLI si nécessaire
+if ! command -v gh &> /dev/null; then
+    install_package "GitHub CLI" \
+        "brew install gh" \
+        "curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg && echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main\" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null && sudo apt update && sudo apt install -y gh" \
+        "sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo && sudo dnf install -y gh" \
+        "sudo pacman -S --noconfirm github-cli"
+fi
+
 # Installation de tmux si nécessaire
 if ! command -v tmux &> /dev/null; then
     install_package "tmux" \

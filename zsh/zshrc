@@ -23,11 +23,26 @@ plugins=(
   jsontools               # Tools for working with JSON (e.g., pp_json, is_json)
   docker                  # Docker aliases and functions
   docker-compose          # Docker Compose aliases
+
+  # Front-end development
   npm                     # NPM aliases and completion
   nvm                     # NVM (Node Version Manager) integration
+  node                    # Node.js aliases and functions
+  yarn                    # Yarn package manager support
+  ng                      # Angular CLI completion and aliases
+  vscode                  # VS Code integration
+
+  # Backend development
   python                  # Python aliases and functions
   pip                     # Pip completion and aliases
+  golang                  # Go language support
+  rust                    # Rust language support
+
+  # Utilities
   tmux                    # Tmux aliases and functions
+  httpie                  # HTTPie aliases (REST client)
+  dotenv                  # Automatically load .env files
+  gh                      # GitHub CLI integration
 )
 
 # Source Oh My Zsh
@@ -181,6 +196,64 @@ alias d='docker'
 alias dc='docker-compose'
 alias dps='docker ps'
 alias dimg='docker images'
+
+# Angular
+alias ng='ng'
+alias ngs='ng serve'
+alias ngt='ng test'
+alias ngb='ng build'
+alias ngg='ng generate'
+alias ngl='ng lint'
+alias ngc='ng component'
+alias ngsw='ng serve --open'
+alias ngbp='ng build --prod'
+
+# Svelte
+alias svdev='npm run dev'
+alias svbuild='npm run build'
+alias svstart='npm run start'
+
+# Node.js & NPM
+alias ni='npm install'
+alias nid='npm install --save-dev'
+alias nig='npm install -g'
+alias ns='npm start'
+alias nt='npm test'
+alias nb='npm run build'
+alias nr='npm run'
+alias ncu='npx npm-check-updates'
+alias ncuu='npx npm-check-updates -u'
+
+# Yarn
+alias y='yarn'
+alias ya='yarn add'
+alias yad='yarn add --dev'
+alias yag='yarn global add'
+alias ys='yarn start'
+alias yt='yarn test'
+alias yb='yarn build'
+
+# Rust
+alias cr='cargo run'
+alias cb='cargo build'
+alias ct='cargo test'
+alias cc='cargo check'
+alias crr='cargo run --release'
+alias cbr='cargo build --release'
+alias cw='cargo watch'
+alias cf='cargo fmt'
+alias ccl='cargo clippy'
+alias cn='cargo new'
+
+# Go
+alias gr='go run'
+alias gb='go build'
+alias gt='go test'
+alias gf='go fmt'
+alias gi='go install'
+alias gim='go mod init'
+alias gtd='go mod tidy'
+alias gv='go vet'
 
 # Tmux
 alias t='tmux'
@@ -371,6 +444,144 @@ checksite() {
 # Fonction pour nettoyer les fichiers .DS_Store
 cleanDS() {
     find . -type f -name '*.DS_Store' -ls -delete
+}
+
+# ===== Fonctions pour le développement front-end =====
+
+# Créer un nouveau projet Angular
+ng-new() {
+    ng new "$1" --routing --style=scss "${@:2}"
+}
+
+# Créer un nouveau projet Svelte avec SvelteKit
+svelte-new() {
+    npm create svelte@latest "$1"
+    cd "$1" || return
+    npm install
+    echo "Projet Svelte créé dans $1"
+}
+
+# Analyser la taille du bundle
+bundle-analyze() {
+    if [ -f "package.json" ]; then
+        npx source-map-explorer dist/**/*.js
+    else
+        echo "Aucun fichier package.json trouvé dans le répertoire courant"
+    fi
+}
+
+# Lancer un serveur de développement avec live-server
+live() {
+    local port="${1:-8080}"
+    npx live-server --port="$port"
+}
+
+# Optimiser les images dans un répertoire
+optimize-images() {
+    local dir="${1:-.}"
+    find "$dir" -type f \( -name "*.jpg" -o -name "*.jpeg" -o -name "*.png" \) -exec npx imagemin {} --out-dir="$dir/optimized" \;
+    echo "Images optimisées dans $dir/optimized"
+}
+
+# Générer des favicons à partir d'une image
+gen-favicons() {
+    if [ -z "$1" ]; then
+        echo "Usage: gen-favicons <image-source>"
+        return 1
+    fi
+    npx real-favicon generate favicon-config.json favicon-data favicon
+    echo "Favicons générés dans le répertoire favicon"
+}
+
+# ===== Fonctions pour Rust =====
+
+# Créer et exécuter un nouveau projet Rust
+rust-new() {
+    cargo new "$1"
+    cd "$1" || return
+    cargo run
+}
+
+# Exécuter un benchmark Rust
+rust-bench() {
+    cargo bench
+}
+
+# Analyser la taille du binaire Rust
+rust-size() {
+    cargo build --release
+    ls -lh target/release
+}
+
+# Vérifier la sécurité des dépendances Rust
+rust-audit() {
+    cargo audit
+}
+
+# ===== Fonctions pour Go =====
+
+# Créer un nouveau projet Go
+go-new() {
+    local project_name="$1"
+    local module_path="${2:-github.com/$(whoami)/$1}"
+
+    mkdir -p "$project_name"/cmd/"$project_name"
+    mkdir -p "$project_name"/internal
+    mkdir -p "$project_name"/pkg
+
+    cd "$project_name" || return
+    go mod init "$module_path"
+
+    # Créer un fichier main.go de base
+    cat > cmd/"$project_name"/main.go << EOF
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	fmt.Println("Hello, $project_name!")
+}
+EOF
+
+    # Créer un fichier README.md de base
+    cat > README.md << EOF
+# $project_name
+
+Description de votre projet.
+
+## Installation
+
+\`\`\`bash
+go get $module_path
+\`\`\`
+
+## Utilisation
+
+\`\`\`bash
+go run cmd/$project_name/main.go
+\`\`\`
+EOF
+
+    echo "Projet Go créé dans $project_name avec la structure standard"
+}
+
+# Exécuter tous les tests Go avec couverture
+go-test-cover() {
+    go test -cover ./...
+}
+
+# Générer un rapport de couverture HTML
+go-cover-html() {
+    go test -coverprofile=coverage.out ./...
+    go tool cover -html=coverage.out
+    rm coverage.out
+}
+
+# Linter Go avec golangci-lint
+go-lint() {
+    golangci-lint run ./...
 }
 
 # Activer les prédictions basées sur l'historique (comme PredictionSource = 'History' dans PowerShell)
