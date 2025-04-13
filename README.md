@@ -1,107 +1,106 @@
 # Dotfiles
 
-Configuration personnalisée pour zsh, tmux et alacritty, inspirée par la configuration PowerShell avec Oh My Posh.
+Customized configuration for zsh, tmux, and alacritty, inspired by PowerShell configuration with Oh My Posh.
 
-## Aperçu
+## Overview
 
-Cette collection de dotfiles comprend :
+This dotfiles collection includes:
 
-- **zsh** : Configuration zsh avec Oh My Posh, autosuggestions, syntax highlighting et fzf
-- **tmux** : Configuration tmux avec thème Catppuccin Macchiato et plugins utiles
-- **alacritty** : Configuration alacritty avec support des polices Nerd Font
+- **zsh**: Configuration with Oh My Posh, autosuggestions, syntax highlighting, and fzf
+- **tmux**: Configuration with Catppuccin Macchiato theme and useful plugins
+- **alacritty**: Configuration with Nerd Font support
 
-## Prérequis
+## Prerequisites
 
-- [Homebrew](https://brew.sh/) (pour macOS)
+- [Homebrew](https://brew.sh/) (for macOS)
 - [Git](https://git-scm.com/)
-- Une police [Nerd Font](https://www.nerdfonts.com/) (JetBrains Mono Nerd Font recommandée)
+- A [Nerd Font](https://www.nerdfonts.com/) (JetBrains Mono Nerd Font recommended)
 
 ## Installation
 
-1. Clonez ce dépôt :
+1. Clone this repository:
    ```bash
-   git clone https://github.com/VOTRE_NOM_UTILISATEUR/dotfiles.git ~/dotfiles
+   git clone https://github.com/lxwiq/dotfiles.git ~/dotfiles
    ```
 
-2. Exécutez le script d'installation :
+2. Run the installation script:
    ```bash
    cd ~/dotfiles
    chmod +x install.sh
    ./install.sh
    ```
 
-3. Redémarrez votre terminal ou rechargez votre configuration :
+3. Restart your terminal or reload your configuration:
    ```bash
    source ~/.zshrc
    ```
 
-## Fonctionnalités
+## Features
 
 ### ZSH
 
-- Thème Oh My Posh (catppuccin_macchiato)
-- Autosuggestions basées sur l'historique
-- Coloration syntaxique
-- Intégration fzf pour la recherche
-- Alias et fonctions utiles
-- Navigation rapide avec z
+- Oh My Posh theme (catppuccin_macchiato)
+- History-based autosuggestions
+- Syntax highlighting
+- fzf integration for searching
+- Useful aliases and functions
+- Quick navigation with z
 
 ### Tmux
 
-- Thème Catppuccin Macchiato
-- Préfixe Ctrl+A
-- Gestion des sessions et fenêtres améliorée
-- Plugins pour la productivité
-- Raccourcis clavier intuitifs
-- Intégration avec vim/neovim
+- Catppuccin Macchiato theme
+- Ctrl+A prefix
+- Enhanced session and window management
+- Productivity plugins
+- Intuitive keyboard shortcuts
+- Integration with vim/neovim
 
 ### Alacritty
 
-- Support des polices Nerd Font
-- Thème assorti à la configuration tmux et zsh
-- Performance optimisée
+- Nerd Font support
+- Theme matching tmux and zsh configuration
+- Optimized performance
 
-## Raccourcis clavier
+## Keyboard Shortcuts
 
 ### ZSH
 
-- `Ctrl+R` : Recherche dans l'historique avec fzf
-- `Ctrl+F` : Recherche de fichiers avec fzf
-- `Alt+C` : Navigation rapide entre répertoires avec fzf
+- `Ctrl+R`: Search history with fzf
+- `Ctrl+F`: Search files with fzf
+- `Alt+C`: Quick directory navigation with fzf
 
 ### Tmux
 
-- `Ctrl+A` : Préfixe tmux
-- `Préfixe + r` : Recharger la configuration
-- `Préfixe + v` : Split vertical
-- `Préfixe + h` : Split horizontal
-- `Préfixe + Ctrl+L` : Effacer l'écran
-- `Ctrl+h/j/k/l` : Navigation entre les panneaux
+- `Ctrl+A`: Tmux prefix
+- `Prefix + r`: Reload configuration
+- `Prefix + v`: Vertical split
+- `Prefix + h`: Horizontal split
+- `Prefix + Ctrl+L`: Clear screen
+- `Ctrl+h/j/k/l`: Navigate between panes
 
-## Personnalisation
+## Customization
 
-Vous pouvez personnaliser ces configurations en modifiant les fichiers dans le répertoire `~/dotfiles`. Après modification, exécutez à nouveau le script d'installation pour mettre à jour les liens symboliques.
+You can customize these configurations by modifying the files in the `~/dotfiles` directory. After making changes, run the installation script again to update the symbolic links.
 
-## Mise à jour
+## Updates
 
-Pour mettre à jour vos dotfiles :
+To update your dotfiles:
 
-1. Accédez au répertoire des dotfiles :
+1. Navigate to the dotfiles directory:
    ```bash
    cd ~/dotfiles
    ```
 
-2. Tirez les dernières modifications (si vous avez cloné depuis un dépôt distant) :
+2. Pull the latest changes (if you cloned from a remote repository):
    ```bash
    git pull
    ```
 
-3. Exécutez le script d'installation :
+3. Run the installation script:
    ```bash
    ./install.sh
    ```
 
-## Licence
+## License
 
-Ce projet est sous licence MIT. Voir le fichier LICENSE pour plus de détails.
-# dotfiles
+This project is licensed under the MIT License. See the LICENSE file for details.
