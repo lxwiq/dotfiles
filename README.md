@@ -2,6 +2,8 @@
 
 Customized configuration for zsh, tmux, and alacritty, inspired by PowerShell configuration with Oh My Posh.
 
+![Screenshot](images/img.png)
+
 ## Overview
 
 This dotfiles collection includes:
