@@ -17,3 +17,6 @@ Thumbs.db
 
 # Répertoires spécifiques
 .dotfiles_backup/
+
+# Jetbrains
+.idea/
