@@ -155,13 +155,19 @@ if [ ! -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]; then
     git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
 fi
 
-# Installation de Oh My Posh
-if ! command -v oh-my-posh &> /dev/null; then
-    install_package "Oh My Posh" \
-        "brew install jandedobbeleer/oh-my-posh/oh-my-posh" \
-        "curl -s https://ohmyposh.dev/install.sh | bash -s" \
-        "curl -s https://ohmyposh.dev/install.sh | bash -s" \
-        "curl -s https://ohmyposh.dev/install.sh | bash -s"
+# Installation de Starship (remplace Oh My Posh)
+if ! command -v starship &> /dev/null; then
+    install_package "Starship" \
+        "brew install starship" \
+        "curl -sS https://starship.rs/install.sh | sh" \
+        "curl -sS https://starship.rs/install.sh | sh" \
+        "curl -sS https://starship.rs/install.sh | sh"
+fi
+
+# Créer le fichier de configuration Starship s'il n'existe pas
+if [ ! -f "$HOME/.config/starship.toml" ]; then
+    echo -e "\n${BLUE}Creating Starship configuration...${NC}"
+    create_symlink "$DOTFILES_DIR/starship.toml" "$HOME/.config/starship.toml"
 fi
 
 # Installation de lsd (ls deluxe)

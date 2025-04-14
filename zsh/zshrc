@@ -48,34 +48,14 @@ plugins=(
 # Source Oh My Zsh
 source $ZSH/oh-my-zsh.sh
 
-# Créons un thème personnalisé basé sur catppuccin_macchiato qui inclut l'environnement virtuel
-if [ ! -d "$HOME/.config/oh-my-posh" ]; then
-    mkdir -p "$HOME/.config/oh-my-posh"
+# Configuration de Starship - un prompt moderne, rapide et hautement personnalisable
+# Assurez-vous que le répertoire de configuration existe
+if [ ! -d "$HOME/.config" ]; then
+    mkdir -p "$HOME/.config"
 fi
 
-# Copier le thème catppuccin_macchiato et le personnaliser pour afficher l'environnement virtuel
-if [ ! -f "$HOME/.config/oh-my-posh/catppuccin_venv.omp.json" ]; then
-    if [ -f "$(brew --prefix oh-my-posh)/themes/catppuccin_macchiato.omp.json" ]; then
-        cp "$(brew --prefix oh-my-posh)/themes/catppuccin_macchiato.omp.json" "$HOME/.config/oh-my-posh/catppuccin_venv.omp.json"
-        # Ajouter le segment venv au thème
-        sed -i '' 's/"blocks": \[/"blocks": \[\n    {\n      "alignment": "left",\n      "segments": \[\n        {\n          "foreground": "#8bd5ca",\n          "properties": {\n            "template": " {{ if .Venv }}{{ .Venv }} {{ end }}"\n          },\n          "style": "plain",\n          "type": "python"\n        }\n      ],\n      "type": "prompt"\n    },/g' "$HOME/.config/oh-my-posh/catppuccin_venv.omp.json" 2>/dev/null || \
-        # Fallback pour Linux/WSL si la commande sed échoue
-        sed -i 's/"blocks": \[/"blocks": \[\n    {\n      "alignment": "left",\n      "segments": \[\n        {\n          "foreground": "#8bd5ca",\n          "properties": {\n            "template": " {{ if .Venv }}{{ .Venv }} {{ end }}"\n          },\n          "style": "plain",\n          "type": "python"\n        }\n      ],\n      "type": "prompt"\n    },/g' "$HOME/.config/oh-my-posh/catppuccin_venv.omp.json" 2>/dev/null
-    fi
-fi
-
-# Configure Oh My Posh avec notre thème personnalisé
-if [ -f "$HOME/.config/oh-my-posh/catppuccin_venv.omp.json" ]; then
-    eval "$(oh-my-posh init zsh --config $HOME/.config/oh-my-posh/catppuccin_venv.omp.json)"
-else
-    # Fallback au thème standard si notre thème personnalisé n'existe pas
-    eval "$(oh-my-posh init zsh --config $(brew --prefix oh-my-posh)/themes/catppuccin_macchiato.omp.json)"
-fi
-
-# Enable automated upgrades for Oh My Posh (similar to PowerShell config)
-export POSH_SETTINGS='{
-  "auto_upgrade": true
-}'
+# Initialiser Starship
+eval "$(starship init zsh)"
 
 # Configuration de l'historique
 HISTSIZE=10000
