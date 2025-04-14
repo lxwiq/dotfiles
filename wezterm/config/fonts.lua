@@ -9,9 +9,9 @@ function M.apply_to_config(config)
   -- Utiliser une police Nerd Font pour les icônes si disponible
   -- Sinon, utiliser une police standard
   config.font = wezterm.font_with_fallback({
-    { family = 'JetBrainsMono Nerd Font', weight = 'Medium' },
     { family = 'Hack Nerd Font', weight = 'Regular' },
     { family = 'Symbols Nerd Font Mono', weight = 'Regular' },
+    { family = 'JetBrainsMono Nerd Font', weight = 'Regular' },
     { family = 'Menlo', weight = 'Regular' },
   })
 
@@ -34,8 +34,8 @@ function M.apply_to_config(config)
     {
       intensity = 'Bold',
       font = wezterm.font_with_fallback({
-        { family = 'JetBrains Mono', weight = 'Bold' },
         { family = 'Hack Nerd Font', weight = 'Bold' },
+        { family = 'JetBrains Mono', weight = 'Bold' },
       }),
     },
 
@@ -43,8 +43,8 @@ function M.apply_to_config(config)
     {
       italic = true,
       font = wezterm.font_with_fallback({
-        { family = 'JetBrains Mono', weight = 'Medium', italic = true },
         { family = 'Hack Nerd Font', weight = 'Regular', italic = true },
+        { family = 'JetBrains Mono', weight = 'Regular', italic = true },
       }),
     },
 
@@ -53,8 +53,8 @@ function M.apply_to_config(config)
       italic = true,
       intensity = 'Bold',
       font = wezterm.font_with_fallback({
-        { family = 'JetBrains Mono', weight = 'Bold', italic = true },
         { family = 'Hack Nerd Font', weight = 'Bold', italic = true },
+        { family = 'JetBrains Mono', weight = 'Bold', italic = true },
       }),
     },
   }
