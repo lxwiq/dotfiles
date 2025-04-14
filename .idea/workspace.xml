@@ -4,9 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="de7d7e13-3854-45da-99ff-d9d3aed1c43c" name="Changes" comment="Remove all configuration and dotfiles&#10;&#10;Deleted custom dotfiles for zsh, tmux, alacritty, and others, along with the README and `.gitignore`. This indicates a cleanup or a migration from the previous configuration files.">
+    <list default="true" id="de7d7e13-3854-45da-99ff-d9d3aed1c43c" name="Changes" comment="Remove all configuration and dotfiles&#10;&#10;Deleted custom Starship, zsh, tmux, and other configuration files, including the README and `.gitignore`. This marks a cleanup or migration away from the existing dotfiles setup. IntelliJ project files were updated accordingly.">
+      <change afterPath="$PROJECT_DIR$/launch-wezterm.sh" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wezterm/config/appearance.lua" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wezterm/config/events.lua" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wezterm/config/fonts.lua" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wezterm/config/general.lua" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wezterm/config/keys.lua" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/wezterm/config/utils.lua" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/AugmentWebviewStateStore.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/AugmentWebviewStateStore.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/starship.toml" beforeDir="false" afterPath="$PROJECT_DIR$/starship.toml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/install.sh" beforeDir="false" afterPath="$PROJECT_DIR$/install.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wezterm/wezterm.lua" beforeDir="false" afterPath="$PROJECT_DIR$/wezterm/wezterm.lua" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -99,7 +108,7 @@
       <workItem from="1744626293292" duration="1383000" />
       <workItem from="1744629158893" duration="412000" />
       <workItem from="1744633551749" duration="906000" />
-      <workItem from="1744634536254" duration="2051000" />
+      <workItem from="1744634536254" duration="5374000" />
     </task>
     <task id="LOCAL-00001" summary="Add initial dotfiles setup with configurations and install script&#10;&#10;This commit introduces an organized structure for managing dotfiles, including configurations for Alacritty, tmux, and zsh. A bash script is added to automate the installation process, setting up symlinks and installing required tools and plugins. Also includes a `.gitignore` and IntelliJ project files.">
       <option name="closed" value="true" />
@@ -237,7 +246,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744636421122</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="Remove all configuration and dotfiles&#10;&#10;Deleted custom Starship, zsh, tmux, and other configuration files, including the README and `.gitignore`. This marks a cleanup or migration away from the existing dotfiles setup. IntelliJ project files were updated accordingly.">
+      <option name="closed" value="true" />
+      <created>1744636809068</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1744636809068</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -260,7 +277,8 @@
     <MESSAGE value="Remove Yarn installation logic from install script" />
     <MESSAGE value="Add checks for Oh My Zsh and Starship existence and reinstall&#10;&#10;Ensure Oh My Zsh and Starship are properly sourced or reinstalled if missing. Adds detailed instructions and fallback mechanisms, including a simple prompt if Starship is unavailable. Enhances robustness of install scripts and improves error handling and user guidance." />
     <MESSAGE value="Remove all configuration and dotfiles&#10;&#10;Deleted custom dotfiles for zsh, tmux, alacritty, and others, along with the README and `.gitignore`. This indicates a cleanup or a migration from the previous configuration files." />
-    <option name="LAST_COMMIT_MESSAGE" value="Remove all configuration and dotfiles&#10;&#10;Deleted custom dotfiles for zsh, tmux, alacritty, and others, along with the README and `.gitignore`. This indicates a cleanup or a migration from the previous configuration files." />
+    <MESSAGE value="Remove all configuration and dotfiles&#10;&#10;Deleted custom Starship, zsh, tmux, and other configuration files, including the README and `.gitignore`. This marks a cleanup or migration away from the existing dotfiles setup. IntelliJ project files were updated accordingly." />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove all configuration and dotfiles&#10;&#10;Deleted custom Starship, zsh, tmux, and other configuration files, including the README and `.gitignore`. This marks a cleanup or migration away from the existing dotfiles setup. IntelliJ project files were updated accordingly." />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>

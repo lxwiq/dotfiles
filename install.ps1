@@ -1,0 +1,223 @@
+# Script d'installation PowerShell pour Windows
+# Ce script installe les dotfiles pour WezTerm et zsh sur Windows
+
+# Fonction pour afficher des messages colorés
+function Write-ColorOutput {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$Message,
+        
+        [Parameter(Mandatory=$false)]
+        [string]$ForegroundColor = "White"
+    )
+    
+    Write-Host $Message -ForegroundColor $ForegroundColor
+}
+
+# Fonction pour créer un lien symbolique
+function Create-Symlink {
+    param(
+        [string]$Source,
+        [string]$Target
+    )
+    
+    # Vérifier si le fichier cible existe déjà
+    if (Test-Path $Target) {
+        $backupDir = Join-Path $env:USERPROFILE ".dotfiles_backup\$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+        
+        # Créer le répertoire de sauvegarde si nécessaire
+        if (-not (Test-Path $backupDir)) {
+            New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
+        }
+        
+        # Sauvegarder le fichier existant
+        $fileName = Split-Path $Target -Leaf
+        $backupPath = Join-Path $backupDir $fileName
+        Move-Item -Path $Target -Destination $backupPath -Force
+        Write-ColorOutput "Existing file backed up to $backupPath" "Cyan"
+    }
+    
+    # Créer le répertoire parent si nécessaire
+    $parentDir = Split-Path $Target -Parent
+    if (-not (Test-Path $parentDir)) {
+        New-Item -ItemType Directory -Path $parentDir -Force | Out-Null
+    }
+    
+    # Créer le lien symbolique
+    try {
+        if (Test-Path $Source -PathType Container) {
+            # C'est un dossier
+            New-Item -ItemType SymbolicLink -Path $Target -Target $Source -Force | Out-Null
+        } else {
+            # C'est un fichier
+            New-Item -ItemType SymbolicLink -Path $Target -Target $Source -Force | Out-Null
+        }
+        Write-ColorOutput "Symlink created: $Target -> $Source" "Green"
+    } catch {
+        Write-ColorOutput "Failed to create symlink: $($_.Exception.Message)" "Red"
+        Write-ColorOutput "Copying file instead..." "Yellow"
+        Copy-Item -Path $Source -Destination $Target -Force -Recurse
+        Write-ColorOutput "File copied: $Target" "Green"
+    }
+}
+
+# Vérifier si le script est exécuté en tant qu'administrateur
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+    Write-ColorOutput "This script requires administrator privileges to create symbolic links." "Yellow"
+    Write-ColorOutput "Please run PowerShell as Administrator and try again." "Yellow"
+    Write-ColorOutput "Continuing without admin rights will result in copying files instead of creating symlinks." "Yellow"
+    $continue = Read-Host "Do you want to continue anyway? (y/n)"
+    if ($continue -ne "y") {
+        exit
+    }
+}
+
+# Répertoire des dotfiles (chemin absolu)
+$scriptPath = $MyInvocation.MyCommand.Path
+$dotfilesDir = Split-Path $scriptPath -Parent
+
+Write-ColorOutput "Installing dotfiles from $dotfilesDir" "Cyan"
+
+# Créer les liens symboliques pour WezTerm
+Write-ColorOutput "`nConfiguring WezTerm..." "Cyan"
+
+# Créer les répertoires de configuration WezTerm
+$weztermConfigDir = Join-Path $env:USERPROFILE ".config\wezterm"
+$weztermConfigModulesDir = Join-Path $weztermConfigDir "config"
+
+if (-not (Test-Path $weztermConfigModulesDir)) {
+    New-Item -ItemType Directory -Path $weztermConfigModulesDir -Force | Out-Null
+}
+
+# Lier le fichier principal
+$weztermLuaSource = Join-Path $dotfilesDir "wezterm\wezterm.lua"
+$weztermLuaTarget1 = Join-Path $weztermConfigDir "wezterm.lua"
+$weztermLuaTarget2 = Join-Path $env:USERPROFILE ".wezterm.lua"
+
+Create-Symlink -Source $weztermLuaSource -Target $weztermLuaTarget1
+Create-Symlink -Source $weztermLuaSource -Target $weztermLuaTarget2
+
+# Lier les fichiers de configuration modulaires
+$configFiles = Get-ChildItem -Path (Join-Path $dotfilesDir "wezterm\config") -Filter "*.lua"
+foreach ($file in $configFiles) {
+    $source = $file.FullName
+    $target = Join-Path $weztermConfigModulesDir $file.Name
+    Create-Symlink -Source $source -Target $target
+}
+
+# Vérifier si WezTerm est installé
+$weztermInstalled = $false
+$weztermPaths = @(
+    "C:\Program Files\WezTerm\wezterm.exe",
+    "C:\Program Files (x86)\WezTerm\wezterm.exe",
+    "$env:LOCALAPPDATA\Programs\WezTerm\wezterm.exe"
+)
+
+foreach ($path in $weztermPaths) {
+    if (Test-Path $path) {
+        $weztermInstalled = $true
+        break
+    }
+}
+
+if (-not $weztermInstalled) {
+    Write-ColorOutput "`nWezTerm not found. Would you like to install it? (y/n)" "Cyan"
+    $installWezterm = Read-Host
+    if ($installWezterm -eq "y") {
+        Write-ColorOutput "Installing WezTerm..." "Cyan"
+        Write-ColorOutput "Choose an installation method:" "Cyan"
+        Write-ColorOutput "1. Download and install manually" "White"
+        Write-ColorOutput "2. Install with winget" "White"
+        Write-ColorOutput "3. Install with scoop" "White"
+        Write-ColorOutput "4. Install with chocolatey" "White"
+        
+        $method = Read-Host "Enter your choice (1-4)"
+        
+        switch ($method) {
+            "1" {
+                Start-Process "https://wezfurlong.org/wezterm/installation.html"
+                Write-ColorOutput "Please download and install WezTerm from the website." "Yellow"
+            }
+            "2" {
+                Write-ColorOutput "Installing with winget..." "Cyan"
+                try {
+                    winget install wez.wezterm
+                } catch {
+                    Write-ColorOutput "Failed to install with winget. Please install manually." "Red"
+                    Start-Process "https://wezfurlong.org/wezterm/installation.html"
+                }
+            }
+            "3" {
+                Write-ColorOutput "Installing with scoop..." "Cyan"
+                try {
+                    scoop install wezterm
+                } catch {
+                    Write-ColorOutput "Failed to install with scoop. Please install manually." "Red"
+                    Start-Process "https://wezfurlong.org/wezterm/installation.html"
+                }
+            }
+            "4" {
+                Write-ColorOutput "Installing with chocolatey..." "Cyan"
+                try {
+                    choco install wezterm -y
+                } catch {
+                    Write-ColorOutput "Failed to install with chocolatey. Please install manually." "Red"
+                    Start-Process "https://wezfurlong.org/wezterm/installation.html"
+                }
+            }
+            default {
+                Start-Process "https://wezfurlong.org/wezterm/installation.html"
+                Write-ColorOutput "Please download and install WezTerm from the website." "Yellow"
+            }
+        }
+    }
+}
+
+# Créer les liens symboliques pour zsh (si utilisé avec MSYS2, Cygwin ou Git Bash)
+Write-ColorOutput "`nConfiguring zsh..." "Cyan"
+$zshrcSource = Join-Path $dotfilesDir "zsh\zshrc"
+$zshrcTarget = Join-Path $env:USERPROFILE ".zshrc"
+
+Create-Symlink -Source $zshrcSource -Target $zshrcTarget
+
+# Créer le répertoire pour les plugins zsh
+$zshPluginsDir = Join-Path $env:USERPROFILE ".zsh"
+if (-not (Test-Path $zshPluginsDir)) {
+    New-Item -ItemType Directory -Path $zshPluginsDir -Force | Out-Null
+}
+
+# Vérifier si Git est installé
+$gitInstalled = $null -ne (Get-Command "git" -ErrorAction SilentlyContinue)
+
+if ($gitInstalled) {
+    # Plugin zsh-autosuggestions
+    $autosuggestionDir = Join-Path $zshPluginsDir "zsh-autosuggestions"
+    if (-not (Test-Path $autosuggestionDir)) {
+        Write-ColorOutput "`nInstalling zsh-autosuggestions plugin..." "Cyan"
+        git clone https://github.com/zsh-users/zsh-autosuggestions $autosuggestionDir
+    }
+    
+    # Plugin zsh-syntax-highlighting
+    $syntaxHighlightingDir = Join-Path $zshPluginsDir "zsh-syntax-highlighting"
+    if (-not (Test-Path $syntaxHighlightingDir)) {
+        Write-ColorOutput "`nInstalling zsh-syntax-highlighting plugin..." "Cyan"
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git $syntaxHighlightingDir
+    }
+} else {
+    Write-ColorOutput "`nGit not found. Please install Git to download zsh plugins." "Yellow"
+    Write-ColorOutput "You can download the plugins manually from:" "Yellow"
+    Write-ColorOutput "https://github.com/zsh-users/zsh-autosuggestions" "White"
+    Write-ColorOutput "https://github.com/zsh-users/zsh-syntax-highlighting" "White"
+}
+
+Write-ColorOutput "`nConfiguration complete!" "Green"
+Write-ColorOutput "Windows-specific notes:" "Cyan"
+Write-ColorOutput "1. For WezTerm, the config files should now be in:" "White"
+Write-ColorOutput "   %USERPROFILE%\.wezterm.lua" "White"
+Write-ColorOutput "   %USERPROFILE%\.config\wezterm\" "White"
+Write-ColorOutput "2. For zsh, you'll need to install it via MSYS2, Cygwin, Git Bash, or WSL" "White"
+Write-ColorOutput "3. To use these configurations, restart WezTerm" "White"
+
+Write-Host "`nPress any key to exit..." -ForegroundColor Cyan
+$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
