@@ -261,15 +261,6 @@ if ! command -v node &> /dev/null; then
         "sudo pacman -S --noconfirm nodejs npm"
 fi
 
-# Installation de Yarn si nécessaire
-if ! command -v yarn &> /dev/null; then
-    install_package "Yarn" \
-        "brew install yarn" \
-        "curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add - && echo \"deb https://dl.yarnpkg.com/debian/ stable main\" | sudo tee /etc/apt/sources.list.d/yarn.list && sudo apt-get update && sudo apt-get install -y yarn" \
-        "curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo && sudo dnf install -y yarn" \
-        "sudo pacman -S --noconfirm yarn"
-fi
-
 # Installation d'Angular CLI si nécessaire
 if ! command -v ng &> /dev/null; then
     echo -e "\n${BLUE}Installing Angular CLI...${NC}"
