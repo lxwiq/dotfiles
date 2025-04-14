@@ -6,11 +6,11 @@ function Write-ColorOutput {
     param(
         [Parameter(Mandatory=$true)]
         [string]$Message,
-        
+
         [Parameter(Mandatory=$false)]
         [string]$ForegroundColor = "White"
     )
-    
+
     Write-Host $Message -ForegroundColor $ForegroundColor
 }
 
@@ -20,29 +20,29 @@ function Create-Symlink {
         [string]$Source,
         [string]$Target
     )
-    
+
     # Vérifier si le fichier cible existe déjà
     if (Test-Path $Target) {
         $backupDir = Join-Path $env:USERPROFILE ".dotfiles_backup\$(Get-Date -Format 'yyyyMMdd_HHmmss')"
-        
+
         # Créer le répertoire de sauvegarde si nécessaire
         if (-not (Test-Path $backupDir)) {
             New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
         }
-        
+
         # Sauvegarder le fichier existant
         $fileName = Split-Path $Target -Leaf
         $backupPath = Join-Path $backupDir $fileName
         Move-Item -Path $Target -Destination $backupPath -Force
         Write-ColorOutput "Existing file backed up to $backupPath" "Cyan"
     }
-    
+
     # Créer le répertoire parent si nécessaire
     $parentDir = Split-Path $Target -Parent
     if (-not (Test-Path $parentDir)) {
         New-Item -ItemType Directory -Path $parentDir -Force | Out-Null
     }
-    
+
     # Créer le lien symbolique
     try {
         if (Test-Path $Source -PathType Container) {
@@ -131,9 +131,9 @@ if (-not $weztermInstalled) {
         Write-ColorOutput "2. Install with winget" "White"
         Write-ColorOutput "3. Install with scoop" "White"
         Write-ColorOutput "4. Install with chocolatey" "White"
-        
+
         $method = Read-Host "Enter your choice (1-4)"
-        
+
         switch ($method) {
             "1" {
                 Start-Process "https://wezfurlong.org/wezterm/installation.html"
@@ -197,7 +197,7 @@ if ($gitInstalled) {
         Write-ColorOutput "`nInstalling zsh-autosuggestions plugin..." "Cyan"
         git clone https://github.com/zsh-users/zsh-autosuggestions $autosuggestionDir
     }
-    
+
     # Plugin zsh-syntax-highlighting
     $syntaxHighlightingDir = Join-Path $zshPluginsDir "zsh-syntax-highlighting"
     if (-not (Test-Path $syntaxHighlightingDir)) {
@@ -212,6 +212,76 @@ if ($gitInstalled) {
 }
 
 Write-ColorOutput "`nConfiguration complete!" "Green"
+# Télécharger et installer Hack Nerd Font
+Write-ColorOutput "`nChecking for Hack Nerd Font..." "Cyan"
+$fontInstalled = $false
+$fontDir = "$env:LOCALAPPDATA\Microsoft\Windows\Fonts"
+$fontFiles = Get-ChildItem -Path "$fontDir" -Filter "Hack*Nerd*Font*.ttf" -ErrorAction SilentlyContinue
+
+if ($fontFiles.Count -gt 0) {
+    Write-ColorOutput "Hack Nerd Font is already installed." "Green"
+    $fontInstalled = $true
+}
+
+if (-not $fontInstalled) {
+    Write-ColorOutput "Hack Nerd Font not found. Would you like to download and install it? (y/n)" "Cyan"
+    $installFont = Read-Host
+    if ($installFont -eq "y") {
+        Write-ColorOutput "Downloading Hack Nerd Font..." "Cyan"
+        $tempDir = Join-Path $env:TEMP "HackNerdFont"
+        $zipFile = Join-Path $env:TEMP "HackNerdFont.zip"
+
+        # Créer le répertoire temporaire
+        if (-not (Test-Path $tempDir)) {
+            New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+        }
+
+        # Télécharger le fichier ZIP
+        try {
+            $url = "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.3.0/Hack.zip"
+            Invoke-WebRequest -Uri $url -OutFile $zipFile
+
+            # Extraire le fichier ZIP
+            Expand-Archive -Path $zipFile -DestinationPath $tempDir -Force
+
+            # Installer les polices
+            $fontFiles = Get-ChildItem -Path $tempDir -Filter "*.ttf"
+            foreach ($fontFile in $fontFiles) {
+                $fontPath = $fontFile.FullName
+
+                # Utiliser l'objet Shell.Application pour installer la police
+                $shellApp = New-Object -ComObject Shell.Application
+                $fonts = $shellApp.Namespace(0x14) # Le dossier Fonts
+
+                if ($fonts.Self.Path) {
+                    $fonts.CopyHere($fontPath)
+                    Write-ColorOutput "Installed font: $($fontFile.Name)" "Green"
+                } else {
+                    Write-ColorOutput "Failed to access Fonts folder. Installing manually..." "Yellow"
+                    Copy-Item -Path $fontPath -Destination "$env:WINDIR\Fonts" -Force
+                    New-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Fonts" -Name $fontFile.Name -Value $fontFile.Name -PropertyType String -Force
+                }
+            }
+
+            Write-ColorOutput "Hack Nerd Font installed successfully!" "Green"
+        } catch {
+            Write-ColorOutput "Failed to download or install Hack Nerd Font: $($_.Exception.Message)" "Red"
+            Write-ColorOutput "Please download and install it manually from: https://www.nerdfonts.com/font-downloads" "Yellow"
+        } finally {
+            # Nettoyer les fichiers temporaires
+            if (Test-Path $zipFile) {
+                Remove-Item -Path $zipFile -Force
+            }
+            if (Test-Path $tempDir) {
+                Remove-Item -Path $tempDir -Recurse -Force
+            }
+        }
+    } else {
+        Write-ColorOutput "Skipping Hack Nerd Font installation. Please install it manually for best experience." "Yellow"
+        Write-ColorOutput "Download from: https://www.nerdfonts.com/font-downloads" "Yellow"
+    }
+}
+
 Write-ColorOutput "Windows-specific notes:" "Cyan"
 Write-ColorOutput "1. For WezTerm, the config files should now be in:" "White"
 Write-ColorOutput "   %USERPROFILE%\.wezterm.lua" "White"

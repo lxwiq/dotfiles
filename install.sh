@@ -198,6 +198,91 @@ fi
 
 # Nous utilisons un prompt zsh natif, pas besoin d'installer Starship
 
+# Installation de Hack Nerd Font
+install_hack_nerd_font() {
+    echo -e "\n${BLUE}Installing Hack Nerd Font...${NC}"
+
+    # Créer un répertoire temporaire
+    local temp_dir="$(mktemp -d)"
+    local font_zip="$temp_dir/Hack.zip"
+
+    # Télécharger la police
+    echo -e "${BLUE}Downloading Hack Nerd Font...${NC}"
+    curl -fsSL -o "$font_zip" "https://github.com/ryanoasis/nerd-fonts/releases/download/v3.3.0/Hack.zip"
+
+    # Extraire et installer la police
+    if [ -f "$font_zip" ]; then
+        echo -e "${BLUE}Extracting font files...${NC}"
+        unzip -q "$font_zip" -d "$temp_dir"
+
+        case "$OS" in
+            macos)
+                # Installer sur macOS
+                echo -e "${BLUE}Installing fonts on macOS...${NC}"
+                mkdir -p "$HOME/Library/Fonts"
+                cp "$temp_dir"/*.ttf "$HOME/Library/Fonts/"
+                ;;
+            linux*|wsl)
+                # Installer sur Linux/WSL
+                echo -e "${BLUE}Installing fonts on Linux...${NC}"
+                mkdir -p "$HOME/.local/share/fonts/HackNerdFont"
+                cp "$temp_dir"/*.ttf "$HOME/.local/share/fonts/HackNerdFont/"
+                fc-cache -f -v > /dev/null
+                ;;
+            windows)
+                # Instructions pour Windows
+                echo -e "${YELLOW}For Windows, please install the fonts manually:${NC}"
+                echo -e "${GREEN}1. Download from: https://www.nerdfonts.com/font-downloads${NC}"
+                echo -e "${GREEN}2. Extract the ZIP file${NC}"
+                echo -e "${GREEN}3. Select all TTF files, right-click and select 'Install'${NC}"
+                ;;
+        esac
+
+        echo -e "${GREEN}Hack Nerd Font installed successfully!${NC}"
+    else
+        echo -e "${RED}Failed to download Hack Nerd Font.${NC}"
+        echo -e "${YELLOW}Please install it manually from: https://www.nerdfonts.com/font-downloads${NC}"
+    fi
+
+    # Nettoyer les fichiers temporaires
+    rm -rf "$temp_dir"
+}
+
+# Vérifier si Hack Nerd Font est déjà installée
+check_hack_font() {
+    case "$OS" in
+        macos)
+            if [ -d "$HOME/Library/Fonts" ] && ls "$HOME/Library/Fonts/Hack*Nerd*Font*.ttf" > /dev/null 2>&1; then
+                return 0
+            fi
+            ;;
+        linux*|wsl)
+            if [ -d "$HOME/.local/share/fonts/HackNerdFont" ] || fc-list | grep -i "Hack Nerd Font" > /dev/null 2>&1; then
+                return 0
+            fi
+            ;;
+        windows)
+            # Difficult to check on Windows from bash
+            return 1
+            ;;
+    esac
+    return 1
+}
+
+# Installer Hack Nerd Font si nécessaire
+if check_hack_font; then
+    echo -e "\n${GREEN}Hack Nerd Font is already installed.${NC}"
+else
+    echo -e "\n${BLUE}Hack Nerd Font not found. Would you like to install it? (y/n)${NC}"
+    read -r install_font_choice
+    if [[ "$install_font_choice" =~ ^[Yy]$ ]]; then
+        install_hack_nerd_font
+    else
+        echo -e "${YELLOW}Skipping Hack Nerd Font installation. Please install it manually for best experience.${NC}"
+        echo -e "${YELLOW}Download from: https://www.nerdfonts.com/font-downloads${NC}"
+    fi
+fi
+
 echo -e "\n${GREEN}Configuration complete!${NC}"
 
 # Instructions spécifiques au système d'exploitation
