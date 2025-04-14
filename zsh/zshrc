@@ -93,7 +93,12 @@ autoload -Uz compinit && compinit
 # Configuration de la complétion pour qu'elle ressemble à MenuComplete de PowerShell
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
-zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+
+# Fix color issues with completion - simplified approach
+export CLICOLOR=1
+export LSCOLORS=ExGxBxDxCxEgEdxbxgxcxd
+zstyle ':completion:*' list-colors ''
+
 zstyle ':completion:*' group-name ''
 zstyle ':completion:*:descriptions' format '%F{green}-- %d --%f'
 zstyle ':completion:*:messages' format '%F{yellow}-- %d --%f'
@@ -158,7 +163,12 @@ alias oe='open .'
 alias o='open'
 
 # Lister les fichiers
-alias ls='ls --color=auto'
+# Use GNU ls on macOS if available, otherwise use standard ls with appropriate flags
+if command -v gls &> /dev/null; then
+    alias ls='gls --color=auto'
+else
+    alias ls='ls -G'
+fi
 alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
@@ -643,13 +653,16 @@ setopt no_beep              # Désactiver les bips
 setopt prompt_subst         # Permettre la substitution dans les prompts
 
 # Raccourcis clavier supplémentaires
-bindkey '^L' clear-screen            # Ctrl+L - effacer l'écran
+bindkey '^L' clear-screen            # Ctrl+L - effacer l'écran (priorité élevée)
 bindkey '^[[1;5C' forward-word       # Ctrl+Right - avancer d'un mot
 bindkey '^[[1;5D' backward-word      # Ctrl+Left - reculer d'un mot
 bindkey '^[[H' beginning-of-line     # Home - début de ligne
 bindkey '^[[F' end-of-line           # End - fin de ligne
 bindkey '^[[3~' delete-char          # Delete - supprimer caractère
 bindkey '^H' backward-kill-word      # Ctrl+Backspace - supprimer mot précédent
+
+# Assurer que Ctrl+L fonctionne toujours pour effacer l'écran
+stty -ixon # Désactiver le contrôle de flux XON/XOFF pour libérer Ctrl+S et Ctrl+Q
 
 # Activer la coloration syntaxique pour less
 export LESS="-R"
