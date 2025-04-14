@@ -45,8 +45,13 @@ plugins=(
   gh                      # GitHub CLI integration
 )
 
-# Source Oh My Zsh
-source $ZSH/oh-my-zsh.sh
+# Source Oh My Zsh s'il existe
+if [ -f "$ZSH/oh-my-zsh.sh" ]; then
+    source "$ZSH/oh-my-zsh.sh"
+else
+    echo "\033[0;31mErreur: Le fichier $ZSH/oh-my-zsh.sh n'existe pas.\033[0m"
+    echo "\033[0;33mVeuillez réinstaller Oh My Zsh avec: sh -c \"$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)\"\033[0m"
+fi
 
 # Configuration de Starship - un prompt moderne, rapide et hautement personnalisable
 # Assurez-vous que le répertoire de configuration existe
@@ -54,8 +59,15 @@ if [ ! -d "$HOME/.config" ]; then
     mkdir -p "$HOME/.config"
 fi
 
-# Initialiser Starship
-eval "$(starship init zsh)"
+# Initialiser Starship s'il est disponible
+if command -v starship &> /dev/null; then
+    eval "$(starship init zsh)"
+else
+    echo "\033[0;33mAttention: Starship n'est pas installé ou n'est pas dans le PATH.\033[0m"
+    echo "\033[0;33mExécutez 'curl -sS https://starship.rs/install.sh | sh -s -- -y' pour l'installer.\033[0m"
+    # Utiliser un prompt simple en attendant
+    PS1='%F{green}%n@%m%f:%F{blue}%~%f$ '
+fi
 
 # Configuration de l'historique
 HISTSIZE=10000

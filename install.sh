@@ -140,6 +140,24 @@ if [ ! -d "$HOME/.oh-my-zsh" ]; then
     echo -e "${GREEN}Oh My Zsh installed.${NC}"
 fi
 
+# Vérifier que le fichier oh-my-zsh.sh existe
+if [ ! -f "$HOME/.oh-my-zsh/oh-my-zsh.sh" ]; then
+    echo -e "${RED}Le fichier oh-my-zsh.sh n'a pas été trouvé. Réinstallation de Oh My Zsh...${NC}"
+    # Sauvegarde des plugins existants si présents
+    if [ -d "$HOME/.oh-my-zsh/custom/plugins" ]; then
+        mkdir -p "$HOME/.oh-my-zsh_backup/custom"
+        cp -r "$HOME/.oh-my-zsh/custom/plugins" "$HOME/.oh-my-zsh_backup/custom/"
+    fi
+    # Suppression et réinstallation
+    rm -rf "$HOME/.oh-my-zsh"
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    # Restauration des plugins
+    if [ -d "$HOME/.oh-my-zsh_backup/custom/plugins" ]; then
+        cp -r "$HOME/.oh-my-zsh_backup/custom/plugins"/* "$HOME/.oh-my-zsh/custom/plugins/"
+    fi
+    echo -e "${GREEN}Oh My Zsh réinstallé avec succès.${NC}"
+fi
+
 # Vérifier si les plugins zsh sont installés
 ZSH_CUSTOM=${ZSH_CUSTOM:-~/.oh-my-zsh/custom}
 
@@ -157,11 +175,25 @@ fi
 
 # Installation de Starship (remplace Oh My Posh)
 if ! command -v starship &> /dev/null; then
-    install_package "Starship" \
-        "brew install starship" \
-        "curl -sS https://starship.rs/install.sh | sh" \
-        "curl -sS https://starship.rs/install.sh | sh" \
-        "curl -sS https://starship.rs/install.sh | sh"
+    echo -e "\n${BLUE}Installing Starship prompt...${NC}"
+    # Utiliser l'option -y pour accepter automatiquement l'installation
+    if [ "$OS" = "wsl" ] || [ "$OS" = "linux" ]; then
+        curl -sS https://starship.rs/install.sh | sh -s -- -y
+        # Vérifier si starship a été installé dans ~/.local/bin et l'ajouter au PATH si nécessaire
+        if [ -f "$HOME/.local/bin/starship" ] && ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
+            echo -e "${YELLOW}Ajout de ~/.local/bin au PATH pour Starship${NC}"
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.zshrc"
+            export PATH="$HOME/.local/bin:$PATH"
+        fi
+    else
+        install_package "Starship" \
+            "brew install starship" \
+            "curl -sS https://starship.rs/install.sh | sh -s -- -y" \
+            "curl -sS https://starship.rs/install.sh | sh -s -- -y" \
+            "curl -sS https://starship.rs/install.sh | sh -s -- -y"
+    fi
+    echo -e "${GREEN}Starship installed successfully.${NC}"
 fi
 
 # Créer le fichier de configuration Starship s'il n'existe pas
