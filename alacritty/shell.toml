@@ -1,4 +1,0 @@
-# Shell configuration
-[terminal.shell]
-program = "/bin/zsh"
-args = ["-l", "-c", "tmux attach || tmux new-session"]

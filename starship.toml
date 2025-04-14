@@ -1,119 +1,56 @@
-# Configuration Starship avec un thème inspiré de Catppuccin Macchiato
-# Pour plus d'options: https://starship.rs/config/
+# Configuration Starship - Version simplifiée
+# Fichier: ~/.config/starship.toml
 
-# Configuration générale
-add_newline = true
-command_timeout = 1000
+# Format général du prompt - version minimaliste
+format = "$directory$git_branch$character"
 
-# Format du prompt
-format = """
-$username\
-$hostname\
-$directory\
-$git_branch\
-$git_state\
-$git_status\
-$python\
-$nodejs\
-$rust\
-$golang\
-$cmd_duration\
-$line_break\
-$character"""
+# Désactiver la ligne vide à la fin du prompt
+add_newline = false
 
 # Caractère du prompt
 [character]
-success_symbol = "[❯](bold green)"
-error_symbol = "[❯](bold red)"
-vimcmd_symbol = "[❮](bold green)"
+success_symbol = "[>](bold green)"
+error_symbol = "[x](bold red)"
 
-# Répertoire courant
+# Affichage du répertoire courant
 [directory]
+style = "blue"
 truncation_length = 3
 truncate_to_repo = true
-style = "bold blue"
-format = "[$path]($style) "
 
-# Branche Git
+# Affichage de la branche Git (simplifié)
 [git_branch]
-format = "[$symbol$branch]($style) "
-symbol = " "
-style = "bold purple"
+format = "[git:$branch]($style) "
+symbol = ""
+style = "purple"
 
-# État Git
-[git_status]
-format = '([\[$all_status$ahead_behind\]]($style) )'
-style = "bold yellow"
-conflicted = "="
-ahead = "⇡${count}"
-behind = "⇣${count}"
-diverged = "⇕⇡${ahead_count}⇣${behind_count}"
-untracked = "?${count}"
-stashed = "*${count}"
-modified = "!${count}"
-staged = "+${count}"
-renamed = "»${count}"
-deleted = "✘${count}"
-
-# Python
-[python]
-format = '[${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
-symbol = " "
-style = "bold cyan"
-detect_extensions = ["py"]
-python_binary = ["python", "python3", "python2"]
-
-# Node.js
-[nodejs]
-format = "[$symbol($version )]($style)"
-symbol = " "
-style = "bold green"
-detect_extensions = ["js", "mjs", "cjs", "ts", "mts", "cts"]
-
-# Rust
-[rust]
-format = "[$symbol($version )]($style)"
-symbol = " "
-style = "bold red"
-detect_extensions = ["rs"]
-
-# Go
-[golang]
-format = "[$symbol($version )]($style)"
-symbol = " "
-style = "bold cyan"
-detect_extensions = ["go"]
-
-# Durée de la commande
-[cmd_duration]
-min_time = 2000
-format = "[$duration]($style) "
-style = "yellow"
-
-# Nom d'utilisateur
+# Désactiver les modules non essentiels
 [username]
-style_user = "bold blue"
-style_root = "bold red"
-format = "[$user]($style) "
-disabled = false
-show_always = false
+disabled = true
 
-# Nom d'hôte
 [hostname]
-ssh_only = true
-format = "[$hostname]($style) "
-style = "bold green"
+disabled = true
 
-# Batterie
-[battery]
-full_symbol = "🔋"
-charging_symbol = "⚡️"
-discharging_symbol = "💀"
+[git_status]
+disabled = true
 
-[[battery.display]]
-threshold = 10
-style = "bold red"
+[cmd_duration]
+disabled = true
 
-[[battery.display]]
-threshold = 30
-style = "bold yellow"
+[python]
+disabled = true
+
+[nodejs]
+disabled = true
+
+[rust]
+disabled = true
+
+[golang]
+disabled = true
+
+[php]
+disabled = true
+
+[docker_context]
+disabled = true
