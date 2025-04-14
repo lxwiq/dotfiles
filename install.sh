@@ -70,9 +70,7 @@ echo -e "\n${BLUE}Configuring zsh...${NC}"
 create_symlink "$DOTFILES_DIR/zsh/zshrc" "$HOME/.config/zsh/zshrc"
 create_symlink "$DOTFILES_DIR/zsh/zshrc" "$HOME/.zshrc"
 
-# Créer les liens symboliques pour starship
-echo -e "\n${BLUE}Configuring starship...${NC}"
-create_symlink "$DOTFILES_DIR/starship.toml" "$HOME/.config/starship.toml"
+# Pas besoin de configurer starship car nous utilisons un prompt zsh natif
 
 # Créer les liens symboliques pour WezTerm
 echo -e "\n${BLUE}Configuring WezTerm...${NC}"
@@ -117,12 +115,7 @@ if [ ! -d "$HOME/.zsh/zsh-syntax-highlighting" ]; then
     git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$HOME/.zsh/zsh-syntax-highlighting"
 fi
 
-# Installation de Starship
-if ! command -v starship &> /dev/null; then
-    echo -e "\n${BLUE}Installing Starship prompt...${NC}"
-    curl -sS https://starship.rs/install.sh | sh -s -- -y
-    echo -e "${GREEN}Starship installed successfully.${NC}"
-fi
+# Nous utilisons un prompt zsh natif, pas besoin d'installer Starship
 
 echo -e "\n${GREEN}Configuration complete!${NC}"
 echo -e "${BLUE}To apply changes, restart your terminal or run:${NC}"

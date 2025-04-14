@@ -4,23 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="de7d7e13-3854-45da-99ff-d9d3aed1c43c" name="Changes" comment="Add checks for Oh My Zsh and Starship existence and reinstall&#10;&#10;Ensure Oh My Zsh and Starship are properly sourced or reinstalled if missing. Adds detailed instructions and fallback mechanisms, including a simple prompt if Starship is unavailable. Enhances robustness of install scripts and improves error handling and user guidance.">
-      <change afterPath="$PROJECT_DIR$/wezterm/wezterm.lua" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/alacritty/alacritty.toml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/alacritty/font.toml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/alacritty/misc.toml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/alacritty/shell.toml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/alacritty/window.toml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/images/img.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/install.sh" beforeDir="false" afterPath="$PROJECT_DIR$/install.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ranger/rc.conf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ranger/rifle.conf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ranger/scope.sh" beforeDir="false" />
+    <list default="true" id="de7d7e13-3854-45da-99ff-d9d3aed1c43c" name="Changes" comment="Remove all configuration and dotfiles&#10;&#10;Deleted custom dotfiles for zsh, tmux, alacritty, and others, along with the README and `.gitignore`. This indicates a cleanup or a migration from the previous configuration files.">
+      <change beforePath="$PROJECT_DIR$/.idea/AugmentWebviewStateStore.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/AugmentWebviewStateStore.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/starship.toml" beforeDir="false" afterPath="$PROJECT_DIR$/starship.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tmux/tmux.conf" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/zsh/zshrc" beforeDir="false" afterPath="$PROJECT_DIR$/zsh/zshrc" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -113,7 +99,7 @@
       <workItem from="1744626293292" duration="1383000" />
       <workItem from="1744629158893" duration="412000" />
       <workItem from="1744633551749" duration="906000" />
-      <workItem from="1744634536254" duration="1749000" />
+      <workItem from="1744634536254" duration="2051000" />
     </task>
     <task id="LOCAL-00001" summary="Add initial dotfiles setup with configurations and install script&#10;&#10;This commit introduces an organized structure for managing dotfiles, including configurations for Alacritty, tmux, and zsh. A bash script is added to automate the installation process, setting up symlinks and installing required tools and plugins. Also includes a `.gitignore` and IntelliJ project files.">
       <option name="closed" value="true" />
@@ -243,7 +229,15 @@
       <option name="project" value="LOCAL" />
       <updated>1744633688950</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Remove all configuration and dotfiles&#10;&#10;Deleted custom dotfiles for zsh, tmux, alacritty, and others, along with the README and `.gitignore`. This indicates a cleanup or a migration from the previous configuration files.">
+      <option name="closed" value="true" />
+      <created>1744636421122</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1744636421122</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -265,7 +259,8 @@
     <MESSAGE value="Replace Oh My Posh with Starship prompt configuration&#10;&#10;Switched from Oh My Posh to Starship for a modern and customizable prompt. Updated installation scripts and zsh configuration to integrate Starship. Added a Starship configuration file inspired by the Catppuccin Macchiato theme." />
     <MESSAGE value="Remove Yarn installation logic from install script" />
     <MESSAGE value="Add checks for Oh My Zsh and Starship existence and reinstall&#10;&#10;Ensure Oh My Zsh and Starship are properly sourced or reinstalled if missing. Adds detailed instructions and fallback mechanisms, including a simple prompt if Starship is unavailable. Enhances robustness of install scripts and improves error handling and user guidance." />
-    <option name="LAST_COMMIT_MESSAGE" value="Add checks for Oh My Zsh and Starship existence and reinstall&#10;&#10;Ensure Oh My Zsh and Starship are properly sourced or reinstalled if missing. Adds detailed instructions and fallback mechanisms, including a simple prompt if Starship is unavailable. Enhances robustness of install scripts and improves error handling and user guidance." />
+    <MESSAGE value="Remove all configuration and dotfiles&#10;&#10;Deleted custom dotfiles for zsh, tmux, alacritty, and others, along with the README and `.gitignore`. This indicates a cleanup or a migration from the previous configuration files." />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove all configuration and dotfiles&#10;&#10;Deleted custom dotfiles for zsh, tmux, alacritty, and others, along with the README and `.gitignore`. This indicates a cleanup or a migration from the previous configuration files." />
   </component>
   <component name="VgoProject">
     <settings-migrated>true</settings-migrated>

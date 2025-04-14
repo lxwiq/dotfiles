@@ -72,11 +72,16 @@ mkcd() {
   mkdir -p "$1" && cd "$1"
 }
 
-# === Starship Prompt ===
-# Initialisation de Starship si installé
-if command -v starship &> /dev/null; then
-  eval "$(starship init zsh)"
-fi
+# === Prompt personnalisé ===
+# Configuration du prompt avec couleurs
+export PROMPT='%F{207}%n%f%F{75}@%f%F{207}%m%f%F{75}[%f%F{214}%~%f%F{75}]%f%F{75}$%f '
+
+# Configuration du prompt de droite avec git si disponible
+autoload -Uz vcs_info
+precmd() { vcs_info }
+zstyle ':vcs_info:git:*' formats '%F{green}(%b)%f'
+zstyle ':vcs_info:*' enable git
+export RPROMPT='${vcs_info_msg_0_}'
 
 # === Chemins personnalisés ===
 # Ajout de ~/.local/bin au PATH
