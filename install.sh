@@ -51,7 +51,7 @@ check_dependencies() {
 
     # Vérifier les dépendances essentielles
     echo -e "\n${BLUE}Vérification des dépendances...${NC}"
-    for cmd in curl unzip git zsh; do
+    for cmd in curl unzip git zsh nvim; do
         if ! command -v $cmd &> /dev/null; then
             missing_deps+=("$cmd")
             echo -e "${YELLOW}Dépendance manquante: $cmd${NC}"
@@ -70,17 +70,68 @@ check_dependencies() {
                 echo -e "${BLUE}Mise à jour des paquets...${NC}"
                 sudo apt update
                 echo -e "${BLUE}Installation des paquets: ${missing_deps[*]}${NC}"
-                sudo apt install -y ${missing_deps[@]}
+
+                # Installation spéciale pour Neovim si nécessaire
+                if [[ " ${missing_deps[*]} " =~ " nvim " ]]; then
+                    echo -e "${BLUE}Installation de Neovim depuis le PPA...${NC}"
+                    sudo add-apt-repository -y ppa:neovim-ppa/unstable
+                    sudo apt update
+                    sudo apt install -y neovim
+
+                    # Retirer nvim de la liste des dépendances manquantes
+                    missing_deps=(${missing_deps[@]/nvim/})
+                fi
+
+                # Installer les autres dépendances si nécessaire
+                if [ ${#missing_deps[@]} -gt 0 ]; then
+                    sudo apt install -y ${missing_deps[@]}
+                fi
                 ;;
             linux-fedora)
-                sudo dnf install -y ${missing_deps[@]}
+                # Installation spéciale pour Neovim si nécessaire
+                if [[ " ${missing_deps[*]} " =~ " nvim " ]]; then
+                    echo -e "${BLUE}Installation de Neovim...${NC}"
+                    sudo dnf install -y neovim python3-neovim
+
+                    # Retirer nvim de la liste des dépendances manquantes
+                    missing_deps=(${missing_deps[@]/nvim/})
+                fi
+
+                # Installer les autres dépendances si nécessaire
+                if [ ${#missing_deps[@]} -gt 0 ]; then
+                    sudo dnf install -y ${missing_deps[@]}
+                fi
                 ;;
             linux-arch|linux-manjaro)
-                sudo pacman -S --needed ${missing_deps[@]}
+                # Installation spéciale pour Neovim si nécessaire
+                if [[ " ${missing_deps[*]} " =~ " nvim " ]]; then
+                    echo -e "${BLUE}Installation de Neovim...${NC}"
+                    sudo pacman -S --needed neovim python-pynvim
+
+                    # Retirer nvim de la liste des dépendances manquantes
+                    missing_deps=(${missing_deps[@]/nvim/})
+                fi
+
+                # Installer les autres dépendances si nécessaire
+                if [ ${#missing_deps[@]} -gt 0 ]; then
+                    sudo pacman -S --needed ${missing_deps[@]}
+                fi
                 ;;
             macos)
                 if command -v brew &> /dev/null; then
-                    brew install ${missing_deps[@]}
+                    # Installation spéciale pour Neovim si nécessaire
+                    if [[ " ${missing_deps[*]} " =~ " nvim " ]]; then
+                        echo -e "${BLUE}Installation de Neovim...${NC}"
+                        brew install neovim
+
+                        # Retirer nvim de la liste des dépendances manquantes
+                        missing_deps=(${missing_deps[@]/nvim/})
+                    fi
+
+                    # Installer les autres dépendances si nécessaire
+                    if [ ${#missing_deps[@]} -gt 0 ]; then
+                        brew install ${missing_deps[@]}
+                    fi
                 else
                     echo -e "${RED}Homebrew non trouvé. Veuillez installer les dépendances manuellement: ${missing_deps[*]}${NC}"
                     echo -e "${YELLOW}Pour installer Homebrew: /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"${NC}"
@@ -207,6 +258,33 @@ create_symlink "$DOTFILES_DIR/wezterm/wezterm.lua" "$HOME/.wezterm.lua"
 for config_file in "$DOTFILES_DIR"/wezterm/config/*.lua; do
   filename=$(basename "$config_file")
   create_symlink "$config_file" "$HOME/.config/wezterm/config/$filename"
+done
+
+# Créer les liens symboliques pour Neovim
+echo -e "\n${BLUE}Configuring Neovim...${NC}"
+
+# Créer les répertoires de configuration Neovim
+mkdir -p "$HOME/.config/nvim/lua/core"
+mkdir -p "$HOME/.config/nvim/lua/plugins"
+mkdir -p "$HOME/.config/nvim/snippets/angular"
+mkdir -p "$HOME/.config/nvim/snippets/rust"
+mkdir -p "$HOME/.config/nvim/snippets/typescript"
+mkdir -p "$HOME/.config/nvim/snippets/markdown"
+mkdir -p "$HOME/.config/nvim/templates"
+
+# Lier le fichier principal
+create_symlink "$DOTFILES_DIR/nvim/init.lua" "$HOME/.config/nvim/init.lua"
+
+# Lier les fichiers de configuration core
+for core_file in "$DOTFILES_DIR"/nvim/lua/core/*.lua; do
+  filename=$(basename "$core_file")
+  create_symlink "$core_file" "$HOME/.config/nvim/lua/core/$filename"
+done
+
+# Lier les fichiers de configuration plugins
+for plugin_file in "$DOTFILES_DIR"/nvim/lua/plugins/*.lua; do
+  filename=$(basename "$plugin_file")
+  create_symlink "$plugin_file" "$HOME/.config/nvim/lua/plugins/$filename"
 done
 
 # Installation de WezTerm si nécessaire
