@@ -106,3 +106,19 @@ case "$(uname -s)" in
     fi
     ;;
 esac
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+
+# Load Angular CLI autocompletion.
+source <(ng completion script)
+
+# fzf integration
+# Load from dotfiles if available, otherwise from home directory
+if [ -f "${ZDOTDIR:-$HOME}/.config/zsh/fzf.zsh" ]; then
+  source "${ZDOTDIR:-$HOME}/.config/zsh/fzf.zsh"
+elif [ -f "${ZDOTDIR:-$HOME}/.fzf.zsh" ]; then
+  source "${ZDOTDIR:-$HOME}/.fzf.zsh"
+fi

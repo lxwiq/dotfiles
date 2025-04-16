@@ -187,6 +187,10 @@ echo -e "\n${BLUE}Configuring zsh...${NC}"
 create_symlink "$DOTFILES_DIR/zsh/zshrc" "$HOME/.config/zsh/zshrc"
 create_symlink "$DOTFILES_DIR/zsh/zshrc" "$HOME/.zshrc"
 
+# Configurer fzf pour zsh
+mkdir -p "$HOME/.config/zsh"
+create_symlink "$DOTFILES_DIR/zsh/fzf.zsh" "$HOME/.config/zsh/fzf.zsh"
+
 # Pas besoin de configurer starship car nous utilisons un prompt zsh natif
 
 # Créer les liens symboliques pour WezTerm
