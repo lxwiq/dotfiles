@@ -72,9 +72,60 @@ mkcd() {
   mkdir -p "$1" && cd "$1"
 }
 
+# === Profile Switcher ===
+# Configuration des profils
+PROFILE_STATE_FILE="$HOME/.profile_current"
+
+# Couleurs Mocli (bleu et jaune)
+MOCLI_PROMPT='%F{33}%n%f%F{226}@%f%F{33}%m%f%F{226}[%f%F{33}%~%f%F{226}]%f%F{226}$%f '
+
+# Couleurs Perso (par défaut)
+PERSO_PROMPT='%F{207}%n%f%F{75}@%f%F{207}%m%f%F{75}[%f%F{214}%~%f%F{75}]%f%F{75}$%f '
+
+# Fonction pour obtenir le profil actuel
+get_profile() {
+    if [[ -f "$PROFILE_STATE_FILE" ]]; then
+        cat "$PROFILE_STATE_FILE"
+    else
+        echo "perso"
+    fi
+}
+
+# Fonction sp pour changer de profil
+function sp() {
+    case "$1" in
+        "perso")
+            echo "perso" > "$PROFILE_STATE_FILE"
+            # Sauvegarder AWS si elle existe
+            if [[ -d "$HOME/.aws" ]]; then
+                mv "$HOME/.aws" "$HOME/.aws_backup" 2>/dev/null || true
+            fi
+            export PROMPT="$PERSO_PROMPT"
+            ;;
+        "mocli")
+            echo "mocli" > "$PROFILE_STATE_FILE"
+            # Restaurer AWS si elle existe
+            if [[ -d "$HOME/.aws_backup" ]]; then
+                mv "$HOME/.aws_backup" "$HOME/.aws" 2>/dev/null || true
+            fi
+            export PROMPT="$MOCLI_PROMPT"
+            ;;
+        *)
+            local current=$(get_profile)
+            echo "Profil actuel: $current"
+            echo "Usage: sp [perso|mocli]"
+            ;;
+    esac
+}
+
 # === Prompt personnalisé ===
-# Configuration du prompt avec couleurs
-export PROMPT='%F{207}%n%f%F{75}@%f%F{207}%m%f%F{75}[%f%F{214}%~%f%F{75}]%f%F{75}$%f '
+# Initialiser le prompt selon le profil actuel
+current_profile=$(get_profile)
+if [[ "$current_profile" == "mocli" ]]; then
+    export PROMPT="$MOCLI_PROMPT"
+else
+    export PROMPT="$PERSO_PROMPT"
+fi
 
 # Configuration du prompt de droite avec git si disponible
 autoload -Uz vcs_info
