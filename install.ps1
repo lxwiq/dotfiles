@@ -1,5 +1,5 @@
 # Script d'installation PowerShell pour Windows
-# Ce script installe les dotfiles pour WezTerm et zsh sur Windows
+# Ce script installe les dotfiles pour zsh sur Windows
 
 # Fonction pour afficher des messages colorés
 function Write-ColorOutput {
@@ -79,40 +79,19 @@ $dotfilesDir = Split-Path $scriptPath -Parent
 
 Write-ColorOutput "Installing dotfiles from $dotfilesDir" "Cyan"
 
-# Créer les liens symboliques pour WezTerm
-Write-ColorOutput "`nConfiguring WezTerm..." "Cyan"
-
-# Créer les répertoires de configuration WezTerm
-$weztermConfigDir = Join-Path $env:USERPROFILE ".config\wezterm"
-$weztermConfigModulesDir = Join-Path $weztermConfigDir "config"
-
-if (-not (Test-Path $weztermConfigModulesDir)) {
-    New-Item -ItemType Directory -Path $weztermConfigModulesDir -Force | Out-Null
-}
-
-# Lier le fichier principal
-$weztermLuaSource = Join-Path $dotfilesDir "wezterm\wezterm.lua"
-$weztermLuaTarget1 = Join-Path $weztermConfigDir "wezterm.lua"
-$weztermLuaTarget2 = Join-Path $env:USERPROFILE ".wezterm.lua"
-
-Create-Symlink -Source $weztermLuaSource -Target $weztermLuaTarget1
-Create-Symlink -Source $weztermLuaSource -Target $weztermLuaTarget2
-
-# Lier les fichiers de configuration modulaires
-$configFiles = Get-ChildItem -Path (Join-Path $dotfilesDir "wezterm\config") -Filter "*.lua"
-foreach ($file in $configFiles) {
-    $source = $file.FullName
-    $target = Join-Path $weztermConfigModulesDir $file.Name
-    Create-Symlink -Source $source -Target $target
-}
-
-# Vérifier si WezTerm est installé
+# Créer les liens symboliques pour WezTerm (si installé)
 $weztermInstalled = $false
 $weztermPaths = @(
     "C:\Program Files\WezTerm\wezterm.exe",
     "C:\Program Files (x86)\WezTerm\wezterm.exe",
-    "$env:LOCALAPPDATA\Programs\WezTerm\wezterm.exe"
+    "$env:LOCALAPPDATA\Programs\WezTerm\wezterm.exe",
+    "$env:PROGRAMFILES\WezTerm\wezterm.exe",
+    "$env:SCOOP\apps\wezterm\current\wezterm.exe",
+    "$env:USERPROFILE\scoop\apps\wezterm\current\wezterm.exe"
 )
+
+# Vérifier aussi dans le PATH
+$weztermInPath = Get-Command "wezterm" -ErrorAction SilentlyContinue
 
 foreach ($path in $weztermPaths) {
     if (Test-Path $path) {
@@ -121,57 +100,41 @@ foreach ($path in $weztermPaths) {
     }
 }
 
-if (-not $weztermInstalled) {
-    Write-ColorOutput "`nWezTerm not found. Would you like to install it? (y/n)" "Cyan"
-    $installWezterm = Read-Host
-    if ($installWezterm -eq "y") {
-        Write-ColorOutput "Installing WezTerm..." "Cyan"
-        Write-ColorOutput "Choose an installation method:" "Cyan"
-        Write-ColorOutput "1. Download and install manually" "White"
-        Write-ColorOutput "2. Install with winget" "White"
-        Write-ColorOutput "3. Install with scoop" "White"
-        Write-ColorOutput "4. Install with chocolatey" "White"
+if ($weztermInPath) {
+    $weztermInstalled = $true
+}
 
-        $method = Read-Host "Enter your choice (1-4)"
+if ($weztermInstalled) {
+    Write-ColorOutput "`nWezTerm détecté, configuration des dotfiles..." "Cyan"
 
-        switch ($method) {
-            "1" {
-                Start-Process "https://wezfurlong.org/wezterm/installation.html"
-                Write-ColorOutput "Please download and install WezTerm from the website." "Yellow"
-            }
-            "2" {
-                Write-ColorOutput "Installing with winget..." "Cyan"
-                try {
-                    winget install wez.wezterm
-                } catch {
-                    Write-ColorOutput "Failed to install with winget. Please install manually." "Red"
-                    Start-Process "https://wezfurlong.org/wezterm/installation.html"
-                }
-            }
-            "3" {
-                Write-ColorOutput "Installing with scoop..." "Cyan"
-                try {
-                    scoop install wezterm
-                } catch {
-                    Write-ColorOutput "Failed to install with scoop. Please install manually." "Red"
-                    Start-Process "https://wezfurlong.org/wezterm/installation.html"
-                }
-            }
-            "4" {
-                Write-ColorOutput "Installing with chocolatey..." "Cyan"
-                try {
-                    choco install wezterm -y
-                } catch {
-                    Write-ColorOutput "Failed to install with chocolatey. Please install manually." "Red"
-                    Start-Process "https://wezfurlong.org/wezterm/installation.html"
-                }
-            }
-            default {
-                Start-Process "https://wezfurlong.org/wezterm/installation.html"
-                Write-ColorOutput "Please download and install WezTerm from the website." "Yellow"
-            }
-        }
+    # Créer les répertoires de configuration WezTerm
+    $weztermConfigDir = Join-Path $env:USERPROFILE ".config\wezterm"
+    $weztermConfigModulesDir = Join-Path $weztermConfigDir "config"
+
+    if (-not (Test-Path $weztermConfigModulesDir)) {
+        New-Item -ItemType Directory -Path $weztermConfigModulesDir -Force | Out-Null
     }
+
+    # Lier le fichier principal
+    $weztermLuaSource = Join-Path $dotfilesDir "wezterm\wezterm.lua"
+    $weztermLuaTarget1 = Join-Path $weztermConfigDir "wezterm.lua"
+    $weztermLuaTarget2 = Join-Path $env:USERPROFILE ".wezterm.lua"
+
+    Create-Symlink -Source $weztermLuaSource -Target $weztermLuaTarget1
+    Create-Symlink -Source $weztermLuaSource -Target $weztermLuaTarget2
+
+    # Lier les fichiers de configuration modulaires
+    $configFiles = Get-ChildItem -Path (Join-Path $dotfilesDir "wezterm\config") -Filter "*.lua" -ErrorAction SilentlyContinue
+    foreach ($file in $configFiles) {
+        $source = $file.FullName
+        $target = Join-Path $weztermConfigModulesDir $file.Name
+        Create-Symlink -Source $source -Target $target
+    }
+
+    Write-ColorOutput "Configuration WezTerm terminée!" "Green"
+} else {
+    Write-ColorOutput "`nWezTerm non détecté. Les fichiers de configuration WezTerm ne seront pas liés." "Yellow"
+    Write-ColorOutput "Si vous installez WezTerm plus tard, relancez ce script pour configurer les dotfiles." "Cyan"
 }
 
 # Créer les liens symboliques pour zsh (si utilisé avec MSYS2, Cygwin ou Git Bash)
@@ -283,11 +246,9 @@ if (-not $fontInstalled) {
 }
 
 Write-ColorOutput "Windows-specific notes:" "Cyan"
-Write-ColorOutput "1. For WezTerm, the config files should now be in:" "White"
-Write-ColorOutput "   %USERPROFILE%\.wezterm.lua" "White"
-Write-ColorOutput "   %USERPROFILE%\.config\wezterm\" "White"
-Write-ColorOutput "2. For zsh, you'll need to install it via MSYS2, Cygwin, Git Bash, or WSL" "White"
-Write-ColorOutput "3. To use these configurations, restart WezTerm" "White"
+Write-ColorOutput "1. For zsh, you'll need to install it via MSYS2, Cygwin, Git Bash, or WSL" "White"
+Write-ColorOutput "2. WezTerm configuration was automatically linked if WezTerm was detected" "White"
+Write-ColorOutput "3. If you install WezTerm later, re-run this script to configure the dotfiles" "White"
 
 Write-Host "`nPress any key to exit..." -ForegroundColor Cyan
 $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")

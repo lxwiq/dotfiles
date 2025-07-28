@@ -1,8 +1,145 @@
-#!/bin/bash
+  #!/bin/bash
 
 # Script d'installation pour les dotfiles
 # Crée des liens symboliques pour les fichiers de configuration
 # Compatible avec macOS, Linux et WSL
+
+# Variables globales
+INSTALL_ZSH=true
+INSTALL_WEZTERM=true
+INSTALL_FONTS=true
+REMOVE_MODE=false
+SHOW_HELP=false
+
+# Fonction d'aide
+show_help() {
+    echo "Usage: $0 [OPTIONS]"
+    echo ""
+    echo "Options d'installation:"
+    echo "  --help, -h          Afficher cette aide"
+    echo "  --all               Installer tout (défaut)"
+    echo "  --zsh-only          Installer uniquement la configuration zsh"
+    echo "  --wezterm-only      Installer uniquement la configuration WezTerm"
+    echo "  --no-fonts          Ne pas installer les polices"
+    echo "  --no-zsh            Ne pas installer la configuration zsh"
+    echo "  --no-wezterm        Ne pas installer la configuration WezTerm"
+    echo ""
+    echo "Options de suppression:"
+    echo "  --remove, -r        Supprimer tous les liens symboliques"
+    echo "  --remove-zsh        Supprimer uniquement les liens zsh"
+    echo "  --remove-wezterm    Supprimer uniquement les liens WezTerm"
+    echo ""
+    echo "Exemples:"
+    echo "  $0                     # Installation complète"
+    echo "  $0 --zsh-only          # Installer uniquement zsh"
+    echo "  $0 --remove            # Supprimer tous les liens symboliques"
+    echo "  $0 --remove-wezterm    # Supprimer uniquement les liens WezTerm"
+    echo "  $0 --no-fonts          # Installer sans les polices"
+    exit 0
+}
+
+# Fonction pour supprimer les liens symboliques zsh
+remove_zsh_links() {
+    echo -e "${BLUE}Suppression des liens symboliques zsh...${NC}"
+    [ -L "$HOME/.config/zsh/zshrc" ] && rm "$HOME/.config/zsh/zshrc" && echo -e "${GREEN}Supprimé: ~/.config/zsh/zshrc${NC}"
+    [ -L "$HOME/.zshrc" ] && rm "$HOME/.zshrc" && echo -e "${GREEN}Supprimé: ~/.zshrc${NC}"
+    [ -L "$HOME/.config/zsh/fzf.zsh" ] && rm "$HOME/.config/zsh/fzf.zsh" && echo -e "${GREEN}Supprimé: ~/.config/zsh/fzf.zsh${NC}"
+    echo -e "${GREEN}Suppression des liens zsh terminée!${NC}"
+}
+
+# Fonction pour supprimer les liens symboliques WezTerm
+remove_wezterm_links() {
+    echo -e "${BLUE}Suppression des liens symboliques WezTerm...${NC}"
+    [ -L "$HOME/.config/wezterm/wezterm.lua" ] && rm "$HOME/.config/wezterm/wezterm.lua" && echo -e "${GREEN}Supprimé: ~/.config/wezterm/wezterm.lua${NC}"
+    [ -L "$HOME/.wezterm.lua" ] && rm "$HOME/.wezterm.lua" && echo -e "${GREEN}Supprimé: ~/.wezterm.lua${NC}"
+
+    # Supprimer les liens des fichiers de configuration modulaires WezTerm
+    for config_file in appearance.lua events.lua fonts.lua general.lua keys.lua utils.lua; do
+        if [ -L "$HOME/.config/wezterm/config/$config_file" ]; then
+            rm "$HOME/.config/wezterm/config/$config_file"
+            echo -e "${GREEN}Supprimé: ~/.config/wezterm/config/$config_file${NC}"
+        fi
+    done
+    echo -e "${GREEN}Suppression des liens WezTerm terminée!${NC}"
+}
+
+# Fonction pour supprimer tous les liens symboliques
+remove_all_dotfiles() {
+    echo -e "${BLUE}Suppression de tous les liens symboliques des dotfiles...${NC}"
+    remove_zsh_links
+    echo ""
+    remove_wezterm_links
+    echo -e "\n${GREEN}Suppression complète terminée!${NC}"
+    echo -e "${BLUE}Note: Les sauvegardes dans ~/.dotfiles_backup/ sont conservées.${NC}"
+}
+
+# Analyser les arguments de ligne de commande
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --help|-h)
+            SHOW_HELP=true
+            shift
+            ;;
+        --remove|-r)
+            REMOVE_MODE=true
+            shift
+            ;;
+        --remove-zsh)
+            remove_zsh_links
+            exit 0
+            ;;
+        --remove-wezterm)
+            remove_wezterm_links
+            exit 0
+            ;;
+        --all)
+            INSTALL_ZSH=true
+            INSTALL_WEZTERM=true
+            INSTALL_FONTS=true
+            shift
+            ;;
+        --zsh-only)
+            INSTALL_ZSH=true
+            INSTALL_WEZTERM=false
+            INSTALL_FONTS=false
+            shift
+            ;;
+        --wezterm-only)
+            INSTALL_ZSH=false
+            INSTALL_WEZTERM=true
+            INSTALL_FONTS=false
+            shift
+            ;;
+        --no-fonts)
+            INSTALL_FONTS=false
+            shift
+            ;;
+        --no-zsh)
+            INSTALL_ZSH=false
+            shift
+            ;;
+        --no-wezterm)
+            INSTALL_WEZTERM=false
+            shift
+            ;;
+        *)
+            echo -e "${RED}Option inconnue: $1${NC}"
+            echo "Utilisez --help pour voir les options disponibles."
+            exit 1
+            ;;
+    esac
+done
+
+# Afficher l'aide si demandé
+if [ "$SHOW_HELP" = true ]; then
+    show_help
+fi
+
+# Mode suppression
+if [ "$REMOVE_MODE" = true ]; then
+    remove_all_dotfiles
+    exit 0
+fi
 
 # Couleurs pour les messages
 GREEN='\033[0;32m'
@@ -51,7 +188,7 @@ check_dependencies() {
 
     # Vérifier les dépendances essentielles
     echo -e "\n${BLUE}Vérification des dépendances...${NC}"
-    for cmd in curl unzip git zsh nvim; do
+    for cmd in curl unzip git zsh; do
         if ! command -v $cmd &> /dev/null; then
             missing_deps+=("$cmd")
             echo -e "${YELLOW}Dépendance manquante: $cmd${NC}"
@@ -71,64 +208,26 @@ check_dependencies() {
                 sudo apt update
                 echo -e "${BLUE}Installation des paquets: ${missing_deps[*]}${NC}"
 
-                # Installation spéciale pour Neovim si nécessaire
-                if [[ " ${missing_deps[*]} " =~ " nvim " ]]; then
-                    echo -e "${BLUE}Installation de Neovim depuis le PPA...${NC}"
-                    sudo add-apt-repository -y ppa:neovim-ppa/unstable
-                    sudo apt update
-                    sudo apt install -y neovim
-
-                    # Retirer nvim de la liste des dépendances manquantes
-                    missing_deps=(${missing_deps[@]/nvim/})
-                fi
-
-                # Installer les autres dépendances si nécessaire
+                # Installer les dépendances
                 if [ ${#missing_deps[@]} -gt 0 ]; then
                     sudo apt install -y ${missing_deps[@]}
                 fi
                 ;;
             linux-fedora)
-                # Installation spéciale pour Neovim si nécessaire
-                if [[ " ${missing_deps[*]} " =~ " nvim " ]]; then
-                    echo -e "${BLUE}Installation de Neovim...${NC}"
-                    sudo dnf install -y neovim python3-neovim
-
-                    # Retirer nvim de la liste des dépendances manquantes
-                    missing_deps=(${missing_deps[@]/nvim/})
-                fi
-
-                # Installer les autres dépendances si nécessaire
+                # Installer les dépendances
                 if [ ${#missing_deps[@]} -gt 0 ]; then
                     sudo dnf install -y ${missing_deps[@]}
                 fi
                 ;;
             linux-arch|linux-manjaro)
-                # Installation spéciale pour Neovim si nécessaire
-                if [[ " ${missing_deps[*]} " =~ " nvim " ]]; then
-                    echo -e "${BLUE}Installation de Neovim...${NC}"
-                    sudo pacman -S --needed neovim python-pynvim
-
-                    # Retirer nvim de la liste des dépendances manquantes
-                    missing_deps=(${missing_deps[@]/nvim/})
-                fi
-
-                # Installer les autres dépendances si nécessaire
+                # Installer les dépendances
                 if [ ${#missing_deps[@]} -gt 0 ]; then
                     sudo pacman -S --needed ${missing_deps[@]}
                 fi
                 ;;
             macos)
                 if command -v brew &> /dev/null; then
-                    # Installation spéciale pour Neovim si nécessaire
-                    if [[ " ${missing_deps[*]} " =~ " nvim " ]]; then
-                        echo -e "${BLUE}Installation de Neovim...${NC}"
-                        brew install neovim
-
-                        # Retirer nvim de la liste des dépendances manquantes
-                        missing_deps=(${missing_deps[@]/nvim/})
-                    fi
-
-                    # Installer les autres dépendances si nécessaire
+                    # Installer les dépendances
                     if [ ${#missing_deps[@]} -gt 0 ]; then
                         brew install ${missing_deps[@]}
                     fi
@@ -233,136 +332,80 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo -e "${BLUE}Installing dotfiles from $DOTFILES_DIR${NC}"
 
-# Créer les liens symboliques pour zsh
-echo -e "\n${BLUE}Configuring zsh...${NC}"
-create_symlink "$DOTFILES_DIR/zsh/zshrc" "$HOME/.config/zsh/zshrc"
-create_symlink "$DOTFILES_DIR/zsh/zshrc" "$HOME/.zshrc"
+# Afficher les options sélectionnées
+echo -e "\n${BLUE}Options d'installation:${NC}"
+echo -e "  Zsh: $([ "$INSTALL_ZSH" = true ] && echo -e "${GREEN}✓${NC}" || echo -e "${RED}✗${NC}")"
+echo -e "  WezTerm: $([ "$INSTALL_WEZTERM" = true ] && echo -e "${GREEN}✓${NC}" || echo -e "${RED}✗${NC}")"
+echo -e "  Polices: $([ "$INSTALL_FONTS" = true ] && echo -e "${GREEN}✓${NC}" || echo -e "${RED}✗${NC}")"
 
-# Configurer fzf pour zsh
-mkdir -p "$HOME/.config/zsh"
-create_symlink "$DOTFILES_DIR/zsh/fzf.zsh" "$HOME/.config/zsh/fzf.zsh"
+# Créer les liens symboliques pour zsh
+if [ "$INSTALL_ZSH" = true ]; then
+    echo -e "\n${BLUE}Configuring zsh...${NC}"
+    create_symlink "$DOTFILES_DIR/zsh/zshrc" "$HOME/.config/zsh/zshrc"
+    create_symlink "$DOTFILES_DIR/zsh/zshrc" "$HOME/.zshrc"
+
+    # Configurer fzf pour zsh
+    mkdir -p "$HOME/.config/zsh"
+    create_symlink "$DOTFILES_DIR/zsh/fzf.zsh" "$HOME/.config/zsh/fzf.zsh"
+else
+    echo -e "\n${YELLOW}Configuration zsh ignorée (--no-zsh ou option sélective)${NC}"
+fi
 
 # Pas besoin de configurer starship car nous utilisons un prompt zsh natif
 
-# Créer les liens symboliques pour WezTerm
-echo -e "\n${BLUE}Configuring WezTerm...${NC}"
+# Créer les liens symboliques pour WezTerm (si installé et demandé)
+if [ "$INSTALL_WEZTERM" = true ]; then
+    if command -v wezterm &> /dev/null; then
+        echo -e "\n${BLUE}WezTerm détecté, configuration des dotfiles...${NC}"
 
-# Créer les répertoires de configuration WezTerm
-mkdir -p "$HOME/.config/wezterm/config"
+        # Créer les répertoires de configuration WezTerm
+        mkdir -p "$HOME/.config/wezterm/config"
 
-# Lier le fichier principal
-create_symlink "$DOTFILES_DIR/wezterm/wezterm.lua" "$HOME/.config/wezterm/wezterm.lua"
-create_symlink "$DOTFILES_DIR/wezterm/wezterm.lua" "$HOME/.wezterm.lua"
+        # Lier le fichier principal
+        create_symlink "$DOTFILES_DIR/wezterm/wezterm.lua" "$HOME/.config/wezterm/wezterm.lua"
+        create_symlink "$DOTFILES_DIR/wezterm/wezterm.lua" "$HOME/.wezterm.lua"
 
-# Lier les fichiers de configuration modulaires
-for config_file in "$DOTFILES_DIR"/wezterm/config/*.lua; do
-  filename=$(basename "$config_file")
-  create_symlink "$config_file" "$HOME/.config/wezterm/config/$filename"
-done
-
-# Créer les liens symboliques pour Neovim
-echo -e "\n${BLUE}Configuring Neovim...${NC}"
-
-# Créer les répertoires de configuration Neovim
-mkdir -p "$HOME/.config/nvim/lua/core"
-mkdir -p "$HOME/.config/nvim/lua/plugins"
-mkdir -p "$HOME/.config/nvim/snippets/angular"
-mkdir -p "$HOME/.config/nvim/snippets/rust"
-mkdir -p "$HOME/.config/nvim/snippets/typescript"
-mkdir -p "$HOME/.config/nvim/snippets/markdown"
-mkdir -p "$HOME/.config/nvim/templates"
-
-# Lier le fichier principal
-create_symlink "$DOTFILES_DIR/nvim/init.lua" "$HOME/.config/nvim/init.lua"
-
-# Lier les fichiers de configuration core
-for core_file in "$DOTFILES_DIR"/nvim/lua/core/*.lua; do
-  filename=$(basename "$core_file")
-  create_symlink "$core_file" "$HOME/.config/nvim/lua/core/$filename"
-done
-
-# Lier les fichiers de configuration plugins
-for plugin_file in "$DOTFILES_DIR"/nvim/lua/plugins/*.lua; do
-  filename=$(basename "$plugin_file")
-  create_symlink "$plugin_file" "$HOME/.config/nvim/lua/plugins/$filename"
-done
-
-# Installation de WezTerm si nécessaire
-install_wezterm() {
-    echo -e "\n${BLUE}Installing WezTerm...${NC}"
-
-    case "$OS" in
-        macos)
-            if command -v brew &> /dev/null; then
-                brew install --cask wezterm
-            else
-                echo -e "${YELLOW}Homebrew not installed. Installing WezTerm manually...${NC}"
-                curl -LO https://github.com/wez/wezterm/releases/download/nightly/WezTerm-macos-nightly.zip
-                unzip WezTerm-macos-nightly.zip
-                mv WezTerm.app /Applications/
-                rm WezTerm-macos-nightly.zip
+        # Lier les fichiers de configuration modulaires
+        for config_file in "$DOTFILES_DIR"/wezterm/config/*.lua; do
+            if [ -f "$config_file" ]; then
+                filename=$(basename "$config_file")
+                create_symlink "$config_file" "$HOME/.config/wezterm/config/$filename"
             fi
-            ;;
-        linux-ubuntu|linux-debian|linux-pop)
-            # Pour Ubuntu, Debian, Pop!_OS
-            echo -e "${BLUE}Installing WezTerm for $OS...${NC}"
-            curl -fsSL https://apt.fury.io/wez/gpg.key | sudo gpg --yes --dearmor -o /usr/share/keyrings/wezterm-fury.gpg
-            echo "deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *" | sudo tee /etc/apt/sources.list.d/wezterm.list
-            sudo apt update
-            sudo apt install -y wezterm
-            ;;
-        linux-fedora)
-            # Pour Fedora
-            echo -e "${BLUE}Installing WezTerm for Fedora...${NC}"
-            sudo dnf copr enable wez/wezterm
-            sudo dnf install -y wezterm
-            ;;
-        linux-arch|linux-manjaro)
-            # Pour Arch Linux et Manjaro
-            echo -e "${BLUE}Installing WezTerm for $OS...${NC}"
-            if command -v yay &> /dev/null; then
-                yay -S wezterm
-            else
-                sudo pacman -S wezterm
-            fi
-            ;;
-        windows|wsl)
-            echo -e "${BLUE}For Windows, please download WezTerm from:${NC}"
-            echo -e "${GREEN}https://wezfurlong.org/wezterm/installation.html${NC}"
-            echo -e "${BLUE}Or install with:${NC}"
-            echo -e "${GREEN}winget install wez.wezterm${NC}"
-            echo -e "${GREEN}scoop install wezterm${NC}"
-            echo -e "${GREEN}choco install wezterm${NC}"
-            ;;
-        *)
-            echo -e "${YELLOW}Please install WezTerm manually from:${NC}"
-            echo -e "${GREEN}https://wezfurlong.org/wezterm/installation.html${NC}"
-            ;;
-    esac
-}
+        done
 
-# Vérifier si WezTerm est installé
-if ! command -v wezterm &> /dev/null && [ "$OS" != "windows" ]; then
-    echo -e "\n${BLUE}WezTerm not found. Would you like to install it? (y/n)${NC}"
-    read -r install_wezterm_choice
-    if [[ "$install_wezterm_choice" =~ ^[Yy]$ ]]; then
-        install_wezterm
+        echo -e "${GREEN}Configuration WezTerm terminée!${NC}"
+    else
+        echo -e "\n${YELLOW}WezTerm non détecté. Les fichiers de configuration WezTerm ne seront pas liés.${NC}"
+        echo -e "${BLUE}Si vous installez WezTerm plus tard, relancez ce script pour configurer les dotfiles.${NC}"
     fi
+else
+    echo -e "\n${YELLOW}Configuration WezTerm ignorée (--no-wezterm ou option sélective)${NC}"
 fi
 
-# Créer le répertoire pour les plugins zsh
-mkdir -p "$HOME/.zsh"
 
-# Plugin zsh-autosuggestions
-if [ ! -d "$HOME/.zsh/zsh-autosuggestions" ]; then
-    echo -e "\n${BLUE}Installing zsh-autosuggestions plugin...${NC}"
-    git clone https://github.com/zsh-users/zsh-autosuggestions "$HOME/.zsh/zsh-autosuggestions"
-fi
 
-# Plugin zsh-syntax-highlighting
-if [ ! -d "$HOME/.zsh/zsh-syntax-highlighting" ]; then
-    echo -e "\n${BLUE}Installing zsh-syntax-highlighting plugin...${NC}"
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$HOME/.zsh/zsh-syntax-highlighting"
+
+
+
+
+
+
+# Installer les plugins zsh si demandé
+if [ "$INSTALL_ZSH" = true ]; then
+    # Créer le répertoire pour les plugins zsh
+    mkdir -p "$HOME/.zsh"
+
+    # Plugin zsh-autosuggestions
+    if [ ! -d "$HOME/.zsh/zsh-autosuggestions" ]; then
+        echo -e "\n${BLUE}Installing zsh-autosuggestions plugin...${NC}"
+        git clone https://github.com/zsh-users/zsh-autosuggestions "$HOME/.zsh/zsh-autosuggestions"
+    fi
+
+    # Plugin zsh-syntax-highlighting
+    if [ ! -d "$HOME/.zsh/zsh-syntax-highlighting" ]; then
+        echo -e "\n${BLUE}Installing zsh-syntax-highlighting plugin...${NC}"
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "$HOME/.zsh/zsh-syntax-highlighting"
+    fi
 fi
 
 # Nous utilisons un prompt zsh natif, pas besoin d'installer Starship
@@ -467,7 +510,36 @@ check_hack_font() {
 
     case "$OS" in
         macos)
-            if [ -d "$HOME/Library/Fonts" ] && ls "$HOME/Library/Fonts/Hack*Nerd*Font*.ttf" &> /dev/null; then
+            # Vérifier dans plusieurs emplacements possibles sur macOS
+            local font_found=false
+
+            # Vérifier dans le répertoire utilisateur
+            if [ -d "$HOME/Library/Fonts" ]; then
+                if ls "$HOME/Library/Fonts/"*Hack*Nerd*Font*.ttf &> /dev/null || \
+                   ls "$HOME/Library/Fonts/"Hack*.ttf &> /dev/null || \
+                   ls "$HOME/Library/Fonts/"*HackNerd*.ttf &> /dev/null; then
+                    font_found=true
+                fi
+            fi
+
+            # Vérifier dans le répertoire système
+            if [ "$font_found" = false ] && [ -d "/Library/Fonts" ]; then
+                if ls "/Library/Fonts/"*Hack*Nerd*Font*.ttf &> /dev/null || \
+                   ls "/Library/Fonts/"Hack*.ttf &> /dev/null || \
+                   ls "/Library/Fonts/"*HackNerd*.ttf &> /dev/null; then
+                    font_found=true
+                fi
+            fi
+
+            # Vérifier avec fc-list si disponible
+            if [ "$font_found" = false ] && command -v fc-list &> /dev/null; then
+                if fc-list | grep -i "hack.*nerd" &> /dev/null || \
+                   fc-list | grep -i "hacknerd" &> /dev/null; then
+                    font_found=true
+                fi
+            fi
+
+            if [ "$font_found" = true ]; then
                 echo -e "${GREEN}Hack Nerd Font est déjà installée sur macOS.${NC}"
                 return 0
             fi
@@ -492,23 +564,27 @@ check_hack_font() {
     return 1
 }
 
-# Installer Hack Nerd Font si nécessaire
-if check_hack_font; then
-    echo -e "${GREEN}Hack Nerd Font est déjà installée.${NC}"
-else
-    echo -e "\n${BLUE}Hack Nerd Font n'a pas été trouvée. Voulez-vous l'installer? (y/n)${NC}"
-    read -r install_font_choice
-    if [[ "$install_font_choice" =~ ^[Yy]$ ]]; then
-        if install_hack_nerd_font; then
-            echo -e "${GREEN}Installation de Hack Nerd Font terminée avec succès.${NC}"
-        else
-            echo -e "${RED}L'installation de Hack Nerd Font a échoué.${NC}"
-            echo -e "${YELLOW}Vous pouvez continuer sans cette police, mais certains icônes pourraient ne pas s'afficher correctement.${NC}"
-        fi
+# Installer Hack Nerd Font si nécessaire et demandé
+if [ "$INSTALL_FONTS" = true ]; then
+    if check_hack_font; then
+        echo -e "${GREEN}Hack Nerd Font est déjà installée.${NC}"
     else
-        echo -e "${YELLOW}Installation de Hack Nerd Font ignorée. Veuillez l'installer manuellement pour une meilleure expérience.${NC}"
-        echo -e "${YELLOW}Télécharger depuis: https://www.nerdfonts.com/font-downloads${NC}"
+        echo -e "\n${BLUE}Hack Nerd Font n'a pas été trouvée. Voulez-vous l'installer? (y/n)${NC}"
+        read -r install_font_choice
+        if [[ "$install_font_choice" =~ ^[Yy]$ ]]; then
+            if install_hack_nerd_font; then
+                echo -e "${GREEN}Installation de Hack Nerd Font terminée avec succès.${NC}"
+            else
+                echo -e "${RED}L'installation de Hack Nerd Font a échoué.${NC}"
+                echo -e "${YELLOW}Vous pouvez continuer sans cette police, mais certains icônes pourraient ne pas s'afficher correctement.${NC}"
+            fi
+        else
+            echo -e "${YELLOW}Installation de Hack Nerd Font ignorée. Veuillez l'installer manuellement pour une meilleure expérience.${NC}"
+            echo -e "${YELLOW}Télécharger depuis: https://www.nerdfonts.com/font-downloads${NC}"
+        fi
     fi
+else
+    echo -e "\n${YELLOW}Installation des polices ignorée (--no-fonts ou option sélective)${NC}"
 fi
 
 echo -e "\n${GREEN}Configuration complete!${NC}"
@@ -518,17 +594,18 @@ case "$OS" in
     windows)
         echo -e "${BLUE}To apply changes on Windows:${NC}"
         echo -e "${GREEN}1. Restart your terminal${NC}"
-        echo -e "${GREEN}2. Make sure WezTerm is installed${NC}"
-        echo -e "${GREEN}3. If using Git Bash or MSYS, you may need to run 'source ~/.zshrc'${NC}"
+        echo -e "${GREEN}2. If using Git Bash or MSYS, you may need to run 'source ~/.zshrc'${NC}"
+        echo -e "${GREEN}3. If WezTerm was detected, restart WezTerm to apply the new configuration${NC}"
         ;;
     wsl)
         echo -e "${BLUE}To apply changes on WSL:${NC}"
         echo -e "${GREEN}1. Restart your terminal or run: source ~/.zshrc${NC}"
-        echo -e "${GREEN}2. Make sure WezTerm is installed on Windows${NC}"
+        echo -e "${GREEN}2. If WezTerm was detected, restart WezTerm to apply the new configuration${NC}"
         ;;
     *)
         echo -e "${BLUE}To apply changes, restart your terminal or run:${NC}"
         echo -e "${GREEN}source ~/.zshrc${NC}"
+        echo -e "${GREEN}If WezTerm was detected, restart WezTerm to apply the new configuration${NC}"
         ;;
 esac
 
@@ -588,8 +665,6 @@ fi
 # Instructions pour Windows
 if [ "$OS" = "windows" ]; then
     echo -e "\n${BLUE}Windows-specific notes:${NC}"
-    echo -e "${GREEN}1. For WezTerm, make sure the config files are in:${NC}"
-    echo -e "${GREEN}   %USERPROFILE%\.wezterm.lua${NC}"
-    echo -e "${GREEN}   %USERPROFILE%\.config\wezterm\${NC}"
-    echo -e "${GREEN}2. For zsh, you'll need to install it via MSYS2, Cygwin, or WSL${NC}"
+    echo -e "${GREEN}1. For zsh, you'll need to install it via MSYS2, Cygwin, or WSL${NC}"
+    echo -e "${GREEN}2. WezTerm configuration will be automatically linked if WezTerm is detected${NC}"
 fi
